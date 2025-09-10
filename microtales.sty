@@ -1,0 +1,44 @@
+% Sections are not numbered but still appear in the Table of Contents.
+\setcounter{secnumdepth}{0}
+
+% Remove space before itemize and enumerate.
+\usepackage{enumitem}
+\setlist[itemize]{noitemsep, topsep=0pt}
+
+% Typesetting used to refer to objects and actions
+\newcommand{\element}[1]{\texttt{#1}}
+\newcommand{\defelement}[1]{\textbf{\texttt{\large #1}}}
+\newcommand{\param}[1]{\textit{#1}}
+
+% Null keywrod
+\newcommand{\None}{\element{Null}}
+
+% Mechanics
+\newcommand{\defmech}[2]{\medskip\noindent\defelement{#1}\label{mech:#1}\par#2}
+\newcommand{\refmech}[1]{\hyperref[mech:#1]{\element{#1}}}
+
+% Locations
+\newcommand{\defloc}[2]{\medskip\noindent\defelement{#1}\label{loc:#1}\par#2}
+\newcommand{\refloc}[1]{\hyperref[loc:#1]{\element{#1}}}
+
+% Characters
+\newcommand{\defchar}[2]{\medskip\noindent\defelement{#1}\label{char:#1}\par#2}
+\newcommand{\refchar}[1]{\hyperref[char:#1]{\element{#1}}}
+
+% Variables
+\newcommand{\defvar}[4]{\medskip\noindent\defelement{#1 (} {\large #2} \defelement{) :} #3 \label{var:#1}\par#4}
+\newcommand{\refvar}[1]{\hyperref[var:#1]{\element{#1}}}
+
+% Constants
+\newcommand{\defconst}[2]{\medskip\noindent\defelement{#1}\label{const:#1}\par#2}
+\newcommand{\refconst}[1]{\hyperref[const:#1]{\element{#1}}}
+
+% Goals
+\newcommand{\defgoal}[3]{\medskip\noindent\defelement{#1 (} {\large #2} \defelement{)}\label{goal:#1}\par#3}
+\newcommand{\refgoal}[1]{\hyperref[goal:#1]{\element{#1}}}
+
+% Actions
+\newcommand{\defact}[3]{\medskip\noindent\defelement{#1 (} {\large #2} \defelement{)}\label{act:#1}\par#3}
+\newcommand{\refact}[1]{\hyperref[act:#1]{\element{#1}}}
+\newenvironment{pre}{\indent\textbf{Preconditions:}\begin{itemize}}{\end{itemize}\par}
+\newenvironment{eff}{\indent\textbf{Effects:}\begin{itemize}}{\end{itemize}\par}

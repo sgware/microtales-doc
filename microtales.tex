@@ -1,0 +1,1445 @@
+%------------------------------------------------------------------------------
+% Preamble
+%------------------------------------------------------------------------------
+\documentclass{nilreport}
+\usepackage{microtales}
+
+%------------------------------------------------------------------------------
+% Meta-Data
+%------------------------------------------------------------------------------
+
+\title{MicroTales: Story Planning Benchmark Problems that Scale along Several Dimensions\\{\large Version 1.0}}
+
+\author{Stephen G. Ware and Molly Siler}
+
+\date{\today}
+
+\abstract{
+This document defines MicroTales, a collection of elements that can be combined into story planning problems of varying size and difficulty. Problems simulate the challenge of telling a structured story in a game where a player typically controls one of the characters and an algorithm controls the rest. MicroTales fills a gap among existing AI benchmark problems by featuring active non-player characters, a wide variety of actions, and the possibility to soft lock the problem. Its purpose is to provide a clearly defined common environment to compare different storytelling algorithms without defining what makes a good story.
+}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\newpage
+
+%------------------------------------------------------------------------------
+% Main Content
+%------------------------------------------------------------------------------
+
+\section{Motivation}
+
+Story planning is the challenge of generating a narrative that meets certain requirements on its structure and content. It is difficult because a story planner needs to look ahead and consider many possible stories before finding one that satisfies all of the solution criteria.
+
+There has now been several decades of academic research on narrative planning~\cite{young2013plans,kybartas2016survey}. Each new research project tends to define one or a few new story planning problems, typically ones that highlight the storytelling features being studied by that project. In a previous effort~\cite{ware2023collection}, we collected several of these problems and put them into a common syntax to make it easier to test an algorithm on a variety of ``naturally occurring'' problems from several authors.
+
+What we feel is missing, and what we are trying to provide with this project, is a single story domain that can generate a wide variety of storytelling problems that vary in size and difficulty. We are inspired by projects like the International Planning Competition~\cite{taitler2023ipc}, AI Gymnasium~\cite{cote2019textworld}, and TextWorld~\cite{cote2019textworld}, but we find many of their problems do not capture the storytelling challenges we are interested in studying. We also hope that this project will help to make story planning problems more accessible to non-academic audiences.
+
+This document describes MicroTales, a single storytelling domain based on very simple fantasy Computer Role Playing Games. Each problem has:
+\begin{itemize}
+	\item Objects that exist, such as characters and locations.
+	\item Variables that can be assigned values to define the world's current state.
+	\item An initial state that describes the configuration of all elements at the start.
+  \item Goals for each character and for the story itself.
+	\item Actions, which have preconditions that limit when they can occur and effects that define how they change the world state.
+\end{itemize}
+
+\noindent We define each of these parts in detail. MicroTales problems are highly modular, with different elements becoming available only when certain \hyperref[sec:mechanics]{mechanics} are enabled. For example, the \refmech{Undead} mechanic contains characters, items, locations, and actions related to ghosts. When the \refmech{Undead} mechanic is enabled, these elements can be used in a problem.
+
+Our definitions do not assume any particular implementation. We want it to be possible to implement MicroTales in everything from the Planning Domain Definition Language~\cite{ghallab1998pddl}, used to define classical planning problems, to an AI Gymnasium environment~\cite{towers2024gymnasium}, used to define a Markov Decision Process for reinforcement learning, to even non-digital implementations, like a board game.
+
+\section{Design Goals}
+
+\paragraph{Game-Like Storytelling Environment:} MicroTales is designed to imitate a simple game environment where a player controls one character and an {\em experience manager} (which might be a human game master or an algorithm) controls the other characters and the environment~\cite{riedl2013interactive}. One of the central challenges in this kind of environment is telling a good story while allowing the player significant agency to make meaningful choices. Problems like this are often solved interactively, meaning that new solutions are generated during play to adapt to unexpected player actions. This does not mean all implementations of MicroTales need to be interactive. You may find it helpful to generate problems that are solved only once; our goal is for them to reflect the kinds of problems that an experience manager would need to solve interactively. In other words, if an algorithm can solve a wide variety of MicroTales problems, it would probably make a good experience manager if it could be made to run interactively.
+
+\paragraph{Event-Level Storytelling:} Stories can be generated at many levels of granularity. The smallest ``atomic unit'' of story content in MicroTales is an event, which typically has a subject, verb, and usually one or two objects. An event would correspond to roughly one sentence of a written story. Early storytelling systems like Universe~\cite{lebowitz1985story} and Facade~\cite{mateas2005structuring} create stories one scene at a time, and an atomic piece of storytelling content corresponds to roughly one paragraph of a written story. Systems based on text generation, like AI Dungeon~\cite{walton2019aidungeon}, generate stories one word at a time. Event-level storytelling exists between these two poles.
+
+\paragraph{Scalable along Several Dimensions:} It should be possible to generate a wide variety of problems of varying size and difficulty, from trivially easy to nearly impossible. MicroTales can vary in the size of the map, the number of characters, the number of items, the types of actions that are available, and the number and complexity of goals that need to be achieved. The ability to generate a wide variety of problems has several advantages. By generating problems of different sizes and with different features turned on or off, we can make a controlled study of what makes story planning problems easy or hard to solve. Having many problems to train on also encourages learning-based approaches to generalize rather than overfit to a small number of specific problems.
+
+\paragraph{Following Genre Tropes:} While MicroTales is meant to allow a wide variety of problems, it is also attempting to follow the genre tropes of simple Medieval computer Role Playing Games. This serves two purposes. First, it allows players of an interactive MicroTales game to leverage existing genre knowledge and minimize the amount of onboarding required to understand the game's rules. Second, MicroTales is intentionally attempting to represent ``naturally occurring'' problems. Some things are unlikely or impossible, and some things are over-represented. MicroTales is not meant to represent every conceivable situation or action. It is not meant to be the only type of benchmark problem that storytelling algorithms should be tested on. We are attempting to add to, not restrict, the variety of storytelling problems available for testing.
+
+\paragraph{Active NPCs:} One purpose of MicroTales is to fill a gap we perceive in the kinds of games available to test storytelling algorithms, namely story games with active non-player characters (NPCs). Many story games, like the interactive fiction {\em Zork}~\cite{anderson1980zork} and similar games available in the TextWorld environment~\cite{cote2019textworld}, rely on the player character to take most of the actions in the story. Actions by others are often short and direct reactions to to the player. An ideal MicroTales problem will feature NPCs taking actions motivated by their own goals, ideally in ways that are predictable or at least believable to the player. Solving a MicroTales problem should involve the player anticipating the actions of NPCs and creating a situation that encourages NPCs to act in a way that accomplishes the player's goal.
+
+\paragraph{Wide Variety of Actions:} Many planning and reinforcement learning benchmark problems have a limited variety of action types available. For example, the classic {\em Blocks World} planning problem~\cite{slaney2001blocks} has only one type of action---moving a block onto another block or onto the table. While it might have a large number of possible actions when we consider all blocks, it has only one {\em type} of action. Similarly, the {\em Cart Pole} reinforcement learning problem~\cite{towers2024gymnasium} has only two actions: push the cart left or right. The action can vary in the force applied, but still there is only one or two types of action. We find that storytelling problems tend to involve a large number of action types. MicroTales has many types of actions with different kinds of preconditions and effects.
+
+\paragraph{Soft Locks are Possible:} A soft lock means a solvable problem has been put into a state from which no solutions are possible. The potential to soft lock a puzzle makes it challenging because solvers must plan ahead. Solvers that rely on performing random actions---like Monte Carlo random rollouts or random exploration in Markov Decision Process solvers---will need to account for soft locks. Many benchmark problems used to test classical planning algorithms~\cite{taitler2023ipc} do not allow soft locks. Stories often feature irreversible actions that require careful planning, which is why soft locks are allowed, and even encouraged, in MicroTales.
+
+\paragraph{Deterministic Actions:} Actions in MicroTales are deterministic, meaning that when an action occurs we know with 100\% certainty what the resulting state will be afterward. Determinism allows a wide variety of search and planning techniques to be applied. Real world problems are not deterministic, but MicroTales is not designed to simulate a real world problem; it is designed to simulate a game in a virtual environment where the experience manager has full control over the virtual world. While a single MicroTales problem is deterministic, the larger problem of experience management in an interactive MicroTales game is usually viewed as nondeterministic since the player may take unexpected actions.
+
+\paragraph{Complex Multi-Agent Interactions:} Most problems will feature more than one character. Many existing AI benchmarks feature only a single agent or assume agents are strictly cooperative or competitive. In MicroTales, each character has their own goals, and they should aid or thwart one another to the extent that their goals align or diverge. One of the central challenges of storytelling is ensuring that each character behaves realistically while maintaining a story's central structure. MicroTales provides an environment to compare emergent storytelling via multi-agent systems to centralized storytelling via planning.
+
+\paragraph{No Model of Storytelling Enforced:} MicroTales enables the study of what makes a story in a story game believable, interesting, and fun. It tries to avoid enforcing any particular model of storytelling in its rules. Action preconditions are meant to be minimal requirements on when an action would be ``physically possible'' in the virtual world. For example, one character can only \refact{give} an item to another if they are in the same location and if the giver has the item. The preconditions do not require that the receiver wants the item; it is up to the algorithm and its model of storytelling to determine whether this action makes sense. To study a model of good storytelling, it must be possible to generate bad stories. Many AI benchmark problems define success as reaching a clear goal via a shortest or lowest cost path, but many MicroTales problems will have ``solutions'' that are bad stories---that is, a sequence of actions that achieves the story goals but is made of actions that are not believable or fun. The quality of a MicroTales solution should not be judged solely on whether it achieves goals or on the number of actions it contains. A solution must be evaluated as a story, but MicroTales does not define what makes a good story. In other words, MicroTales defines a set of objects, actions, and goals so that two researchers can be said to be working in the same domain, but it does not define success in that domain.
+
+\paragraph{Problem Curation Encouraged:} MicroTales defines a problem's elements and when they can be used, but it makes no claim that all generated problems are interesting. Many MicroTales problems will have no way to reach a goal state, and many that have a reachable goal state may not have any interesting or good stories that do so. In other words, generating a uniform sample of MicroTales problems is not likely to result in a set of interesting problems. Problem generators will need to apply further criteria and quality checks to ensure problems are interesting. Generating or curating interesting problem sets by hand is also encouraged.
+
+\newpage
+
+\begin{figure}[!ht]
+{\small
+\begin{code}
+name: "Robin Hood"
+version: 1.0
+mechanics:
+- Crime    # Adds jail; allows lawful; allows arrest and release actions
+- Marriage # Adds chapel; allows smitten; allows marry action
+- Monarchy # Adds castle and Crown; allows ambitious; enthrone action
+- Theft    # Adds bandit, Coin, and Sword; allows steal action
+- Violence # Adds knight and Sword; allows vengeful; attack action
+locations:
+  Sherwood : forest   # Sherwood forest
+  Nottingham : castle # Nottingham Castle
+  Jail : jail         # The Jail
+  Abbey : chapel      # Fountains Abbey
+paths: # Sherwood Forest connects all locations
+- [Sherwood, Nottingham]
+- [Sherwood, Jail]
+- [Sherwood, Abbey]
+characters:
+  Robin : bandit   # Robin Hood is a bandit.
+  John : noble     # Prince John is a noble.
+  Sheriff : knight # The Sheriff of Nottingham is a knight.
+  Marian : noble   # Maid Marian is a noble.
+initial: # Only need to list values if they are not defaults
+- [location, Robin, Forest] # Robin starts in Sherwood Forest.
+- [right, John, Crown]      # Prince John starts with a Crown.
+goals:
+- [Robin, greedy, Robin]           # Robin wants coins.
+- [Robin, smitten, Robin, Marian]  # Robin wants to marry Marian.
+- [John, ambitious, John]          # John wants to be king.
+- [John, smitten, John, Marian]    # John wants to marry Marian.
+- [John, vengeful, John]           # John wants his enemies dead.
+- [Sheriff, ambitious, John]       # The sheriff wants John to be king.
+- [Sheriff, lawful]                # The sheriff wants no criminals.
+- [Marian, ambitious, Marian]      # Marian wants to be monarch.
+- [smitten, Robin, Marian]         # Story goal: Robin marries Marian.
+\end{code}}
+\vspace{-1em}
+\caption{An example MicroTales problem in YAML format.}
+\label{fig:problemex}
+\end{figure}
+
+\section{Example Problem}
+
+Figure \ref{fig:problemex} gives an example MicroTales problem that approximates a simple version of the Robin Hood setting. The story goal, given on the last line, is for Robin Hood and Maid Marian to get married. This section describes some example stories that are possible in this problem and why they might be desirable or undesirable. We assume this problem is presented as an interactive game where the player controls Robin Hood.
+
+\begin{code}
+walk(Robin, Nottingham) # Robin goes to Nottingham Castle.
+take(Robin, Coin, John) # Robin is greedy, so he wants coins.
+attack(Sheriff, Robin)  # The Sheriff of Nottingham hurts Robin.
+attack(Sheriff, Robin)  # The sheriff kills Robin.
+\end{code}
+
+This is a simple but unsuccessful story. Robin robs Prince John, but the Sheriff of Nottingham kills Robin for his crimes. This example does not achieve the story goal, but if the problem is presented as an interactive puzzle it might be a reasonable but unsuccessful attempt by the player to achieve Robin's goals. Suppose the player tries a different approach.
+
+\begin{code}
+walk(Robin, Castle)          # Robin goes to Nottingham Castle.
+take(Robin, Crown, John)     # Robins steals John's crown.
+enthrone(Robin)              # Robin is crowned king.
+arrest(Sheriff, Robin, Jail) # Lawful sheriff throws Robin in jail.
+walk(Marian, Sherwood)       # Marian on her way to release Robin.
+release(Marian, Jail)        # Marian unlocks the jail.
+walk(Robin, Jail, Sherwood)  # Robin on his way to marry Marian.
+walk(Robin, Abbey)           # Robin goes to the chapel.
+walk(Marian, Abbey)          # Marian goes to the chapel.
+marry(Robin, Marian)         # Marian becomes queen by marriage.
+\end{code}
+
+This story is more interesting. Robin steals the \refconst{Crown} and becomes the \refvar{monarch}. The storyteller is faced with two possible responses from the sheriff: \refact{attack} like in the previous story, or \refact{arrest} Robin and move him to the \refloc{jail}. Killing Robin would end the story before the goal is achieved, but arresting him leaves it open for a happy ending later. Robin can't do anything from the jail, but Marian comes to free him. Marian's plan is to marry Robin and satisfy her \refgoal{ambitious} goal as well as the story goal. We consider this story more interesting because non-player characters take an active role.
+
+While this makes a plausible story, it may not work when presented as a puzzle, since the player might wonder why Robin was allowed to take several actions in a row without any response from the sheriff. Next, we'll consider a story that enforces strict turn-taking, always allowing one player action after one NPC action.
+
+\begin{code}
+enthrone(John, Nottingham)  # John is crowned king.
+# The player chooses to wait, passing their turn.
+walk(John, Sherwood)        # John on his way to marry.
+take(Robin, Coin, John)     # Robin steals John's money.
+walk(Marian, Sherwood)      # Marian on her way to marry.
+take(Robin, Crown, John)    # Robin steals John's crown.
+walk(John, Abbey)           # John on his way to marry.
+walk(Robin, Nottingham)     # Robin on his way to be crowned.
+walk(Marian, Abbey)         # Marian on her way to marry.
+enthrone(Robin)             # Robin is crowned king.
+take(Sheriff, Crown, Robin) # Sheriff steals Robin's crown.
+walk(Robin, Sherwood)       # Robin on his way to marry.
+walk(Sheriff, Sherwood)     # Sheriff on his way to John.
+walk(Robin, Abbey)          # Robin on his way to marry.
+walk(John, Sherwood)        # John on his way to the sheriff.
+marry(Robin, Marian)        # Marian becomes queen by marriage.
+\end{code}
+
+John starts by achieving his \refgoal{ambitious} goal and becoming the \refvar{monarch}. He and Marian then \refact{walk} in the direction of Fountains Abbey to \refact{marry}. On the way, John gets robbed by Robin Hood. The player waiting for John to pass by is a prime example of a player anticipating active NPCs. Robin then goes to Nottingham Castle and crowns himself the new \refvar{monarch} before the wedding can take place. The sheriff takes the crown from Robin and goes to Sherwood Forest hoping to give the crown to John. Robin makes his way to Fountains Abbey and marries Marian, achieving the story goal.
+
+In this example, our model of storytelling assumes characters only witness actions that occur in their location (except \refact{enthrone}, which gets announced to everyone throughout the kingdom). The sheriff is not aware of Robin's crimes, since he was not in Sherwood Forest during the robbery. This model of limited observability is not required. MicroTales does not model character beliefs; that is left to the storyteller, who is free to use this or any other model. For this problem, we think it makes the characters seems more realistic, and it adds a new dimension to the puzzle by encouraging Robin to avoid witnesses to his crimes.
+
+Given the sheriff does not know about Robin's crimes, it may seem odd that he would \refact{take} the \refconst{Crown}. This theft makes him a \refvar{criminal} and goes against his \refgoal{lawful} goal. The sheriff takes the crown because he hopes to return it to John so that John can again take the throne. After returning the crown, the sheriff plans to \refact{arrest} himself, satisfying all his goals, though the story ends before he can complete his plan. Does it make sense for the sheriff to \refact{arrest} himself? This is up to the storyteller.
+
+Notice also how the sheriff and John meet in Sherwood Forest. According to our model, the sheriff saw John leave for the \refloc{forest}, but did not see John continue to the Abbey, so the sheriff wrongly believes John is in the forest. John did not see the sheriff go to the forest, so John wrongly believes the sheriff is in the \refloc{castle}. Luckily, these two meet by chance in the forest despite their wrong beliefs thanks to some clever coordination by the storyteller.
+
+\newpage
+
+\section{Definitions}
+
+A MicroTales problem is defined by several explicit elements which imply the inclusion of other elements. The explicit elements of a problem are:
+\begin{itemize}
+	\item An optional name or title.
+	\item An optional version number, to check compatibility. This is the version of MicroTales, not of the problem itself.
+	\item A list of \hyperref[sec:mechanics]{mechanics}, which define what elements are available to use.
+	\item A list of \hyperref[sec:locations]{locations}, each defined by a name and type.
+	\item A list of \hyperref[sec:locations]{paths} that connect locations.
+	\item A list of \hyperref[sec:characters]{characters}, each defined by a name and type.
+	\item A list of initial value assignments to the problem's \hyperref[sec:variables]{variables}.
+	\item A list of \hyperref[sec:goals]{goals} for the characters and the story itself.
+\end{itemize}
+
+\noindent Figure \ref{fig:problemex} shows an example problem in YAML format.
+
+Many elements of a problem are not explicitly listed but are implied by what is explicitly listed. For example, each problem defines \hyperref[sec:variables]{variables}, and the current state of the problem is an assignment of a value to each of its variables. Variables are not explicitly listed because they are implied by the mechanics, locations, and characters. Similarly, actions are not explicitly listed because which actions are available is implied by the other elements.
+
+A problem's elements cannot be created or destroyed. The only thing about a problem that changes over time is the values assigned to its \hyperref[sec:variables]{variables}. New locations cannot be added to the map, nor can existing locations be removed. New characters cannot be created or removed (though they can be killed when the relevant \hyperref[sec:mechanics]{mechanics} are enabled). The items a character is carrying are not first class elements of a problem, so they do not need to be explicitly defined, and they can be created and destroyed (\hyperref[sec:constants]{see the section on Constants for how items work}).
+
+The following subsections define MicroTales elements in detail. Rules which must be followed are {\em required}. When something is {\em recommended}, it means that a problem generator should try to follow those rules when it can, but it may choose to ignore those rules in service of some other design goal. When a definition says something is a {\em default}, it means that a problem assumes the rule will be followed. If a default is not followed, the problem must explicitly state some other value. For example, a \refchar{noble} character starts with a \refconst{Coin} in their \refvar{left} hand by default. The problem does not need to list this under its initial facts because it will be assumed. If the noble should not start with a coin, the problem should explicitly list their \refvar{left} hand as \None.
+
+\paragraph{Style and Capitalization}
+Throughout this document, we capitalize specific, individual objects. This includes universal constants like \element{True}, \element{False}, and \None, the names of all \hyperref[sec:mechanics]{mechanics}, the names of all \hyperref[sec:constants]{constants}, and the names given to individual objects defined in example problems, like the character name \element{Robin}. We use lower case for types, which includes all \hyperref[sec:locations]{location types}, \hyperref[sec:characters]{character types}, \hyperref[sec:variables]{variable names}, \hyperref[sec:goals]{goal names}, and \hyperref[sec:actions]{action names}. For example, \element{Robin} is the name of a specific character, so we capitalize his name, but his character type, \refchar{bandit}, is a type and is written in lower case. The variable \element{health(Robin)} has a lower case name because \refvar{health} is a type of variables, but the value \refconst{Healthy}, which can be assigned to that variable, is a single individual constant and is capitalized.
+
+\newpage
+
+\subsection{Mechanics} \label{sec:mechanics}
+
+A mechanic is a group of related problem elements that become available when a mechanic is included in a problem. Mechanics are designed to allow additional types of actions in a problem, but doing so means enabling the locations, characters, and goals that would make those actions possible and relevant.
+
+Figure \ref{fig:problemex} shows an example list of mechanics. In YAML, the list of mechanics is simply the key \element{mechanics} followed by a sequence of strings. The list of mechanics is optional and can be omitted, but problems with no mechanics are likely to be uninteresting.
+
+Some mechanics require that other mechanics are also enabled. For example, the \refmech{Undead} mechanic requires some way for characters to die, which is enabled by both the \refmech{Sickness} and \refmech{Violence} mechanics. One of these two must be enabled in order to enable \refmech{Undead}. A problem should explicitly list all mechanics that it uses, even those required by other mechanics. For example, a problem that includes \refmech{Undead} should also explicitly list \refmech{Sickness} or \refmech{Violence} or both.
+
+Several problem elements can be enabled by more than one mechanic. For example, several mechanics enable potions of some sort. All of these mechanics enable the \refchar{sorcerer} character type, whose special actions revolve around using potions.
+
+Not all of the elements enabled by a mechanic need to be used in the problem, though at least one should be used. We recommend this rule of thumb: if a mechanic could be removed without modifying the problem at all, then it is not really enabled and should not be listed as part of the problem.
+
+\defmech{Alchemy}{
+\begin{itemize}
+  \item Requires \refmech{Enchantment}, \refmech{Healing}, \refmech{Sickness}, \refmech{Stealth}, \refmech{Teleportation}, or \refmech{Undead}.
+	\item Enables the \refloc{laboratory} location type.
+	\item Enables the \refconst{Flower} item constant.
+	\item Enables the \refact{brew} action.
+\end{itemize}}
+
+\defmech{Commerce}{
+\begin{itemize}
+	\item Enables the \refloc{market} location type.
+	\item Enables the \refchar{merchant} character type.
+	\item Enables the \refconst{Coin} item constant.
+	\item Enables the \refgoal{greedy} goal.
+	\item Enables the \refact{sell} action.
+\end{itemize}}
+
+\defmech{Crafting}{
+\begin{itemize}
+  \item Requires \refmech{Commerce}, \refmech{Crime}, \refmech{Monarchy}, \refmech{Theft}, or \refmech{Violence}.
+	\item Enables the \refloc{workshop} location type.
+	\item Enables the \refconst{Ore} item constant.
+	\item Enables the \refact{craft} action.
+\end{itemize}}
+
+\defmech{Crime}{
+\begin{itemize}
+	\item Enables the \refloc{jail} location type.
+	\item Enables the \refchar{knight} character type.
+	\item Enables the \refvar{criminal} variable type.
+	\item Enables the \refconst{Sword} item constant.
+	\item Enables the \refgoal{chaotic} and \refgoal{lawful} goals.
+	\item Enables the \refact{arrest}, \refact{jailbreak}, and \refact{release} actions.
+\end{itemize}}
+
+\defmech{Enchantment}{
+\begin{itemize}
+  \item Enables the \refchar{noble} and \refchar{sorcerer} character types.
+	\item Enables the \refconst{CharmPotion} item constant.
+	\item Enables the \refact{charm} action.
+\end{itemize}}
+
+\defmech{Forgiveness}{
+\begin{itemize}
+  \item Requires \refmech{Crime}.
+	\item Enables the \refloc{chapel} location type.
+	\item Enables the \refchar{cleric} character type.
+	\item Enables the \refact{forgive} and \refact{repent} actions.
+\end{itemize}}
+
+\defmech{Healing}{
+\begin{itemize}
+  \item Requires \refmech{Sickness} or \refmech{Violence}.
+	\item Enables the \refchar{cleric} and \refchar{sorcerer} character types.
+	\item Enables the \refconst{HealPotion} item constant.
+	\item Enables the \refact{heal} action.
+\end{itemize}}
+
+\defmech{Marriage}{
+\begin{itemize}
+  \item Enables the \refloc{chapel} location type.
+	\item Enables the \refvar{spouse} variable type.
+	\item Enables the \refconst{Flower} item constant.
+	\item Enables the \refgoal{smitten} goal type.
+	\item Enables the \refact{marry} action.
+\end{itemize}}
+
+\defmech{Monarchy}{
+\begin{itemize}
+  \item Enables the \refloc{castle} location type.
+	\item Enables the \refchar{noble} character type.
+	\item Enables the \refvar{monarch} variable type.
+	\item Enables the \refconst{Crown} item constant.
+	\item Enables the \refgoal{ambitious} goal type.
+	\item Enables the \refact{enthrone} action.
+\end{itemize}}
+
+\defmech{Sickness}{
+\begin{itemize}
+  \item Enables the \refchar{sorcerer} character type.
+	\item Enables the \refvar{health} variable type.
+	\item Enables the \refconst{CursePotion} item constant.
+	\item Enables the \refgoal{hateful} and \refgoal{loving} goal types.
+	\item Enables the \refact{curse}, \refact{die}, \refact{loot}, \refact{recover}, and \refact{sicken} actions.
+\end{itemize}}
+
+\defmech{Stealth}{
+\begin{itemize}
+  \item Enables the \refloc{camp} location type.
+	\item Enables the \refchar{bandit} and \refchar{sorcerer} character types.
+	\item Enables the \refvar{visible} variable type.
+	\item Enables the \refconst{HidePotion} item constant.
+	\item Enables the \refact{hide} action.
+\end{itemize}}
+
+\defmech{Teleportation}{
+\begin{itemize}
+  \item Enables the \refchar{sorcerer} character type.
+	\item Enables the \refconst{TeleportPotion} item constant.
+	\item Enables the \refact{teleport} action.
+\end{itemize}}
+
+\defmech{Theft}{
+\begin{itemize}
+  \item Enables the \refchar{bandit} character type.
+	\item Enables the \refconst{Coin} and \refconst{Sword} item constants.
+	\item Enables the \refgoal{greedy} goal type.
+	\item Enables the \refact{take} action.
+\end{itemize}}
+
+\defmech{Undead}{
+\begin{itemize}
+  \item Requires \refmech{Sickness} or \refmech{Violence}.
+	\item Enables the \refloc{graveyard} location type.
+	\item Enables the \refchar{cleric} and \refchar{sorcerer} character types.
+	\item Enables the \refconst{BanishPotion} and \refconst{RaisePotion} item constants.
+	\item Enables the \refact{banish}, \refact{curse}, \refact{raise}, and \refact{rise} actions.
+\end{itemize}}
+
+\defmech{Violence}{
+\begin{itemize}
+  \item Enables the \refchar{knight} character type.
+	\item Enables the \refvar{health} variable type.
+	\item Enables the \refconst{Sword} item constant.
+	\item Enables the \refgoal{hateful} and \refgoal{loving} goal types.
+	\item Enables the \refact{attack}, \refact{die}, \refact{loot}, and \refact{recover} actions.
+\end{itemize}}
+
+\newpage
+
+\subsection{Locations and Paths} \label{sec:locations}
+
+MicroTales problems take place on a map made of one or more connected locations. A location has a unique name and a type. The type determines what special actions are available in that location. There can be more than one location of the same type on a map as long as they have different names. For example, \element{Sherwood} and \element{Mirkwood} might both be locations of type \refloc{forest}. We recommend avoiding duplicate locations when possible simply for the sake of variety.
+
+Figure \ref{fig:problemex} shows an example list of locations. In YAML, the list of locations is the key \element{locations} followed by a mapping of string names to string types, where the type is one of those defined below. The list of locations is not optional, because a problem must define at least one location.
+
+Four location types are always available: the \refloc{cave}, \refloc{crossroads}, \refloc{forest}, and \refloc{village}. These locations are similar in function---\hyperref[sec:characters]{characters} can \refact{drop} or \refact{pickup} an \refvar{item}. The \refloc{cave} and \refloc{forest} have default \refvar{item}s waiting to be picked up when some mechanics are enabled.
+
+The order that locations are defined in affects the default starting locations of \hyperref[sec:characters]{characters}. For example, the \refchar{bandit} character type's default starting location is the first \refloc{camp} or \refloc{crossroads} location that is defined in the problem. If a problem contains both a \refloc{camp} and a \refloc{crossroads}, the \refchar{bandit} will start in whichever one is defined first in the list of locations. Similarly, if the problem has more than one location of type \refloc{camp}, the first one will be used. If there are no locations that a character prefers to start in, they default to starting in the first location in the list. These defaults do not apply if a problem explicitly states a character's starting location.
+
+After defining the list of locations, a problem should define how they are connected via paths. A path is a pair of locations. A path goes in both directions. For example, if \element{Sherwood} and \element{Nottingham} are connected, then a character can \refact{walk} from one to the other and back again. When defining a path, the two locations can be given in either order. Each location type defines a minimum and maximum number of paths it should have connecting it to other locations.
+
+As shown in Figure \ref{fig:problemex}, in YAML the list of paths is the key \element{paths} followed by a sequence of pairs of strings that match the names of locations. The list of paths is optional if no locations are connected, though only very small problems will have no paths.
+
+We recommend that locations be placed on a 2 dimensional grid where each location is of equal size and paths always lead North, South, East or West. This is not required, but it makes it easier to visualize MicroTales problems for an audience.
+
+The existence of paths is important for the \refact{walk} action, but paths are not defined as \hyperref[sec:variables]{variables} because they do not change (though the \refloc{jail} location type can be \refvar{locked} to restrict movement). We recommend that all locations be accessible to one another. In other words, it should be possible to \refact{walk} a route from any location to any other.
+
+\defloc{camp}{
+\begin{itemize}
+	\item Only available when \refmech{Stealth} is enabled.
+	\item Required to have between 1 and 2 connections.
+	\item Any character can \refact{hide} here.
+\end{itemize}}
+
+\defloc{castle}{
+\begin{itemize}
+	\item Only available when \refmech{Monarchy} is enabled.
+	\item Required to have between 1 and 4 connections.
+	\item A character can \refact{enthrone} here when holding a \refconst{Crown} to become the \refvar{monarch}.
+\end{itemize}}
+
+\defloc{cave}{
+\begin{itemize}
+	\item Required to have between 1 and 2 connections.
+	\item When \refmech{Crafting} is enabled, the \refvar{item} at this location is \refconst{Ore} by default.
+	\item A character can \refact{drop} or \refact{pickup} an item here.
+\end{itemize}}
+
+\defloc{chapel}{
+\begin{itemize}
+	\item Only available when \refmech{Forgiveness} or \refmech{Marriage} is enabled.
+	\item Required to have between 1 and 3 connections.
+	\item A character can \refact{repent} for their crimes here.
+	\item Two characters can \refact{marry} here.
+\end{itemize}}
+
+\defloc{crossroads}{
+\begin{itemize}
+	\item Required to have 2 to 4 connections.
+	\item A character can \refact{drop} or \refact{pickup} an item here.
+\end{itemize}}
+
+\defloc{forest}{
+\begin{itemize}
+	\item Required to have 0 to 4 connections.
+	\item A character can \refact{drop} or \refact{pickup} an item here.
+	\item When \refmech{Alchemy} is enabled, the \refvar{item} at this location is \refconst{Flower} by default.
+	\item A \refconst{Flower} can \refact{grow} here.
+\end{itemize}}
+
+\defloc{graveyard}{
+\begin{itemize}
+	\item Only available when \refmech{Undead} is enabled.
+	\item Required to have 0 to 2 connections.
+	\item A \refconst{Ghost} can be \refact{raise}d or can \refact{rise} here.
+\end{itemize}}
+
+\defloc{jail}{
+\begin{itemize}
+	\item Only available when \refmech{Crime} is enabled.
+	\item Required to have exactly 1 connection.
+	\item Characters can only \refact{walk} into or out of this location when it is not \refvar{locked}.
+	\item The \refact{arrest} action sends a character here and causes it to be \refvar{locked}.
+	\item The \refact{jailbreak} and \refact{release} actions unlock this location.
+\end{itemize}}
+
+\defloc{laboratory}{
+\begin{itemize}
+	\item Only available when \refmech{Alchemy} is enabled.
+	\item Required to have 1 to 2 connections.
+	\item Any character can \refact{brew} a potion from a \refconst{Flower} here.
+\end{itemize}}
+
+\defloc{market}{
+\begin{itemize}
+	\item Only available when \refmech{Commerce} is enabled.
+	\item Required to have 1 to 4 connections.
+	\item Any character except the \refchar{merchant} can \refact{sell} an item here to get a \refconst{Coin}.
+\end{itemize}}
+
+\defloc{village}{
+\begin{itemize}
+	\item Required to have 0 to 4 connections.
+	\item A character can \refact{drop} or \refact{pickup} an item here.
+\end{itemize}}
+
+\defloc{workshop}{
+\begin{itemize}
+	\item Only available when \refmech{Crafting} is enabled.
+	\item Required to have 1 to 2 connections.
+	\item Any character can \refact{craft} one metal item into another here.
+\end{itemize}}
+
+\newpage
+
+\subsection{Characters} \label{sec:characters}
+
+Characters are agents who act in the story world. Like locations, each character has a unique name and a type. There can be more than one character of the same type in a problem as long as they have different names. We recommend avoiding duplicate character types when possible simply for the sake of variety.
+
+Figure \ref{fig:problemex} shows an example list of characters. In YAML, the list of characters is the key \element{characters} followed by a mapping of string names to string types, where the type is one of those defined below. The list of characters is not optional, because a problem must define at least one character.
+
+Character types define what special actions a character can take. They prohibit some character goals and recommend others. Many character types also define a default starting location and starting items. These defaults do not apply if a problem explicitly states some other starting location or starting items.
+
+The only character type that is always available is the \refchar{peasant}, which has no special qualities. All other character types are enabled by \hyperref[sec:mechanics]{mechanics}.
+
+\defchar{bandit}{
+\begin{itemize}
+	\item Only available when \refmech{Stealth} or \refmech{Theft} is enabled.
+	\item Starts at a the first \refloc{camp} or \refloc{crossroads} defined in the problem by default.
+	\item Required not to be \refgoal{lawful}.
+	\item Recommended to be \refgoal{greedy}.
+	\item Can \refact{hide} at any location, not just a \refloc{camp}.
+	\item Can \refact{take} from another character even when unarmed.
+\end{itemize}}
+
+\defchar{cleric}{
+\begin{itemize}
+	\item Only available when \refmech{Forgiveness}, \refmech{Healing}, or \refmech{Undead} is enabled.
+	\item Starts at the first \refloc{chapel} or \refloc{graveyard} defined in the problem by default.
+	\item Required not to be \refgoal{vengeful} (unless they become a \refconst{Ghost}; see \hyperref[sec:goals]{Goals}).
+	\item Recommended to be \refgoal{friendly}.
+	\item Can \refact{banish} a \refconst{Ghost} even if they are not carrying a \refconst{BanishPotion}.
+	\item Can \refact{forgive} a character their crimes.
+	\item Can \refact{heal} a character even if they are not carrying a \refconst{HealPotion}.
+\end{itemize}}
+
+\defchar{knight}{
+\begin{itemize}
+	\item Only available when \refmech{Crime} or \refmech{Violence} is enabled.
+	\item Starts at the first \refloc{castle} or \refloc{market} defined in the problem by default.
+	\item Starts with a \refconst{Sword} in their \refvar{left} hand by default.
+	\item Recommended to be \refgoal{ambitious} for a \refchar{noble}.
+	\item Recommended to be \refgoal{lawful}.
+	\item Can \refact{attack} even when not carrying a \refconst{Sword}.
+\end{itemize}}
+
+\defchar{merchant}{
+\begin{itemize}
+	\item Only available when \refmech{Commerce} is enabled.
+	\item Starts at the first \refloc{market} or \refloc{crossroads} defined in the problem by default.
+	\item Recommended to start with at least one item of any type except a \refconst{Coin}.
+	\item Required not to be \refgoal{friendly}.
+	\item Recommended to be \refgoal{greedy}.
+	\item Cannot \refact{sell} items at the \refloc{market}.
+\end{itemize}}
+
+\defchar{noble}{
+\begin{itemize}
+	\item Only available when \refmech{Enchantment} or \refmech{Monarchy} is enabled.
+	\item Starts at the first \refloc{castle} or \refloc{chapel} defined in the problem by default.
+	\item Starts with a \refconst{Coin} in their \refvar{left} hand by default.
+	\item Recommended to be \refgoal{ambitious}.
+	\item Can \refact{charm} another character even when not carrying a \refconst{CharmPotion}.
+\end{itemize}}
+
+\defchar{peasant}{
+\begin{itemize}
+	\item Starts at the first \refloc{village} or \refloc{workshop} defined in the problem by default.
+\end{itemize}}
+
+\defchar{sorcerer}{
+\begin{itemize}
+	\item Only available when \refmech{Enchantment}, \refmech{Healing}, \refmech{Sickness}, \refmech{Stealth}, \refmech{Teleportation}, or \refmech{Undead} is enabled.
+	\item Starts at the first \refloc{laboratory} or \refloc{graveyard} defined in the problem by default.
+	\item Recommended to start with at least one \hyperref[sec:constants]{potion} of any type.
+	\item Recommended to be \refgoal{vengeful}.
+	\item Can \refact{brew} a potion even when not in a \refloc{laboratory}.
+\end{itemize}}
+
+\newpage
+
+\subsection{Variables and Initial Values} \label{sec:variables}
+
+Variables are features of a problem that are assigned one of several possible values. All of a problem's variables with their assigned values define a problem state. Different \hyperref[sec:actions]{actions} are possible depending on the current state, and \hyperref[sec:actions]{actions} change the values assigned to variables. Actions are the only way to change variable values.
+
+A problem does not explicitly define its variables; they are implied by the other elements in the problem. For example, when the \refmech{Violence} mechanic is enabled the problem must have a \refvar{health} variable for every \hyperref[sec:characters]{character}.
+
+A variable is identified by a name followed by zero to many arguments. In the example above, \element{health} is the name of the variable, and it has one argument, the name of the character. If a problem defines two characters named \element{Robin} and \element{Marian}, then it will have two \refvar{health} variables, one for each of them. In text, we would write those variables as \element{health(Robin)} and \element{health(Marian)}, though in YAML we use a different style, as discussed below.
+
+Some variables have more than one argument, and the order of arguments matters. For example, every problem tracks the \refvar{relationship} between each pair of characters, so our example problem will need the variables \element{relationship(Robin, Marian)} and \element{relationship(Marian, Robin)}. The first variable tracks how \element{Robin} regards \element{Marian}, and the second tracks how \element{Marian} regards \element{Robin}. Relationships are not symmetric, so these variables can have different values.
+
+The variable definitions in this section begin with the variable name, followed by one or more parameters in parentheses, followed by a colon and a description of the variable's possible values. Sometimes a value is simply Boolean, meaning \element{True} or \element{False}. Sometimes a value is a type, like a location. For example, every character has a \refvar{location} variable, and its possible values are the names of every \hyperref[sec:locations]{location} defined in the problem, plus \None to represent a situation where the character is nowhere on the map. Sometimes a variable's value is a set of pre-defined \hyperref[sec:constants]{constants}. For example, a \refvar{relationship} variable can have three possible values: \refconst{Friend}, \None, and \refconst{Enemy}, which mean that the first character considers the second a friend, has no relationship, or considers the second an enemy respectively. Many variables have one of a pre-defined list of \hyperref[sec:constants]{constants} as their possible values. All constants are defined in \hyperref[sec:constants]{the next section}.
+
+All variables have a default initial value they will be assigned, but these defaults are ignored if the problem explicitly defines a variable's initial value. Figure \ref{fig:problemex} shows an example list of initial values. In YAML, this list is the key \element{initial} followed by a sequence of sequences. Each initial value sequence includes the variable name (defined below), its arguments, and finally the initial value to assign to that variable. For example, if we want \element{Robin} to start with a \refconst{Sword}, we would write:
+
+\centerline{\element{[\refvar{left}, Robin, \refconst{Sword}]}}
+
+\noindent This sequence has three parts: the variable name, the variable's arguments (in this case, one argument), and finally the value to assign to the variable---i.e. the item to put in Robin's \refvar{left} hand. In text, we would write this value assignment as:
+
+\centerline{\element{\refvar{left}(Robin) = \refconst{Sword}}}
+
+\noindent Defining the initial value of a variable with multiple arguments looks like this:
+
+\centerline{\element{[relationship, John, Robin, \refconst{Enemy}]}}
+
+Some variables, like the \refvar{relationship} between each character, are counter to MicroTales's design principle of modeling only necessary physical elements of the world and making no commitments to any particular model of storytelling. These variables exist because they are needed to define some of the \hyperref[sec:goals]{goals} that characters and stories have. Whenever possible, we try to avoid using them to limit when \hyperref[sec:actions]{actions} are possible.
+
+\defvar{criminal}{\param{character}}{Boolean}{
+\begin{itemize}
+  \item Only available when \refmech{Crime} is enabled.
+	\item Tracks whether the \param{character} has committed any crimes.
+	\item Default value is \element{False}.
+	\item The \refgoal{chaotic} goal is satisfied when characters are criminals and not in a \refloc{jail}.
+	\item The \refgoal{lawful} goal is satisfied when no characters are criminals or when all criminals are in a \refloc{jail}.
+	\item It is a crime to \refact{arrest} a character who is not a \refvar{criminal}.
+	\item It is a crime to \refact{release} prisoners from the \refloc{jail}.
+	\item When \refmech{Sickness} or \refmech{Undead} is enabled, it is a crime to \refact{curse} a character who is not a criminal.
+	\item When \refmech{Theft} is enabled, it is a crime to \refact{take} an item from a living character who is not a criminal.
+	\item When \refmech{Violence} is enabled, it is a crime to \refact{attack} a character who is not a criminal.
+\end{itemize}}
+
+\defvar{health}{\param{character}}{\{\refconst{Healthy}, \refconst{Hurt}, \refconst{Dead}, \refconst{Ghost}\}}{
+\begin{itemize}
+  \item Only available when \refmech{Sickness} or \refmech{Violence} is enabled.
+	\item Tracks the capabilities of the \param{character} to do certain actions.
+	\item Default value is \refconst{Healthy}, meaning a character can act normally.
+	\item A \refconst{Hurt} character can do most actions but cannot \refact{walk}.
+	\item A \refconst{Dead} character cannot do most actions.
+	\item When \refmech{Undead} is enabled, a \refconst{Ghost} character cannot do most actions, but they can \refact{curse} and \refact{walk}.
+	\item The \refgoal{loving} goal is satisfied by a character being \refconst{Healthy}.
+	\item The \refgoal{hateful} goal is satisfied by a character being \refconst{Dead}.
+	\item The \refact{attack} and \refact{curse} actions degrades a target character's health (\refconst{Healthy} to \refconst{Hurt} or \refconst{Hurt} to \refconst{Dead}).
+	\item The \refact{sicken} action causes a \refconst{Healthy} character to become \refconst{Hurt}.
+	\item The \refact{die} action causes a \refconst{Hurt} character to become \refconst{Dead}.
+	\item The \refact{heal} and \refact{recover} actions causes a \refconst{Hurt} character to become \refconst{Healthy}.
+	\item The \refact{raise} and \refact{rise} actions cause a \refconst{Dead} character to become a \refconst{Ghost} and sets their \refvar{location} to a \refloc{graveyard}.
+	\item The \refact{banish} action causes a \refconst{Ghost} to become \refconst{Dead}.
+\end{itemize}}
+
+\defvar{item}{\param{location}}{the name of any \hyperref[sec:constants]{item} or \None}{
+\begin{itemize}
+	\item The \param{location} must be a \refloc{cave}, \refloc{crossroads}, \refloc{forest}, or \refloc{village}.
+  \item Tracks what item is lying on the ground at the \param{location}.
+	\item Default value is \None, which means there is no item at this location.
+	\item Characters can \refact{drop} items they are holding.
+	\item Characters can \refact{pickup} a location's item.
+	\item When \refmech{Crafting} is enabled, \refconst{Ore} is in every \refloc{cave} by default.
+	\item When \refmech{Alchemy} is enabled, a \refconst{Flower} is in every \refloc{forest} by default.
+	\item When \refmech{Alchemy} is enabled, a \refconst{Flower} can \refact{grow} in a \refloc{forest}.
+\end{itemize}}
+
+\defvar{left}{\param{character}}{any \hyperref[sec:constants]{item} or \None}{
+\begin{itemize}
+  \item The \hyperref[sec:constants]{item} a character is holding in their left hand.
+	\item Default value is usually \None, which means this hand is empty, but some character types start with items in their hands by default (see \hyperref[sec:characters]{Characters}).
+	\item A character's \refvar{left} and \refvar{right} hands behave the same way.
+\end{itemize}}
+
+\defvar{location}{\param{character}}{the name of any \hyperref[sec:locations]{location} or \None}{
+\begin{itemize}
+  \item The \param{character}'s current position on the map.
+	\item The value \None means the character is nowhere on the map.
+	\item The \refgoal{homesick} goal is satisfied by a character being at a certain location.
+	\item Many actions require that a character be at a certain location or in the same location as another character they are interacting with.
+	\item Character locations can change via the \refact{arrest}, \refact{teleport}, and \refact{walk} actions.
+\end{itemize}}
+
+\defvar{locked}{\param{jail}}{Boolean}{
+\begin{itemize}
+  \item Only available when \refmech{Crime} is enabled.
+	\item The argument must be a location of type \refloc{jail}.
+	\item Tracks whether the \refloc{jail} is locked or unlocked.
+	\item Default value is \element{False}.
+	\item When a \param{jail} is locked, characters cannot \refact{walk} to or from it.
+	\item The \refact{arrest} action moves a character to a jail and locks the jail.
+	\item The \refact{jailbreak} and \refact{release} actions unlock a jail.
+\end{itemize}}
+
+\defvar{monarch}{}{the name of any \hyperref[sec:characters]{character} or \None}{
+\begin{itemize}
+  \item Only available when \refmech{Monarchy} is enabled.
+	\item Tracks which character is the ruler.
+	\item Default value is \None, meaning no character is currently the monarch.
+	\item The \refgoal{ambitious} goal is satisfied by a certain character becoming the monarch.
+	\item When holding a \refconst{Crown} in a \refloc{castle}, a character can \refact{enthrone} themselves to become the monarch.
+\end{itemize}}
+
+\defvar{relationship}{\param{character}, \param{other}}{\{\refconst{Friend}, \None, \refconst{Enemy}\}}{
+\begin{itemize}
+  \item How the first \param{character} views the \param{other} character. The arguments must be different characters.
+	\item Default value is \None, which means the \param{character} has no relationship or a neutral relationship to the \param{other}.
+	\item The value \refconst{Friend} means the \param{character} views the \param{other} positively.
+	\item The value \refconst{Enemy} means the \param{character} views the \param{other} negatively.
+	\item Relationships are not symmetric. The \param{other}'s relationship to the \param{character} can be different.
+	\item The \refgoal{friendly} goal is satisfied by a character regarding other \refconst{Healthy} characters as \refconst{Friend}.
+	\item The \refgoal{kind} goal is satisfied by other characters regarding a character as a \refconst{Friend}.
+	\item The \refgoal{spiteful} goal is satisfied by other characters regarding a character as an \refconst{Enemy}.
+	\item The \refgoal{vengeful} goal is satisfied by a character not regarding other living characters as \refconst{Enemy}.
+	\item The \refact{charm}, \refact{give}, \refact{heal}, and \refact{release} actions can cause a relationship to improve (\refconst{Enemy} to \None or \None to \refconst{Friend}).
+	\item The \refact{arrest}, \refact{attack}, \refact{banish}, \refact{curse}, and \refact{take} actions can cause a relationship to degrade (\refconst{Friend} to \None or \None to \refconst{Enemy}).
+\end{itemize}}
+
+\defvar{right}{\param{character}}{any \hyperref[sec:constants]{item} or \None}{
+\begin{itemize}
+  \item The \hyperref[sec:constants]{item} a character is holding in their right hand.
+	\item Default value is usually \None, which means this hand is empty, but some character types start with items in their hands by default (see \hyperref[sec:characters]{Characters}).
+	\item A character's \refvar{left} and \refvar{right} hands behave the same way.
+\end{itemize}}
+
+\defvar{spouse}{\param{character}}{the name of any \hyperref[sec:characters]{character} or \None}{
+\begin{itemize}
+  \item Only available when \refmech{Marriage} is enabled.
+	\item Tracks who is married to the \param{character}.
+	\item Default value is \None, meaning the \param{character} is not married.
+	\item Marriage is symmetric. When character \element{A} has spouse \element{B}, then character \element{B} must also have spouse \element{A}.
+	\item The \refgoal{smitten} goal is satisfied when a pair of characters are one another's spouses.
+	\item The \refact{marry} action causes two characters to become one another's spouses.
+	\item When characters die via the \refact{attack}, \refact{curse}, or \refact{die} actions, both members of a marriage have their spouse set to \None.
+\end{itemize}}
+
+\defvar{visible}{\param{character}}{Boolean}{
+\begin{itemize}
+  \item Only available when \refmech{Stealth} is enabled.
+	\item Tracks whether a character can be seen by others.
+	\item Default value is \element{True}.
+	\item Invisible characters can usually act normally, but actions usually cannot be done to invisible characters.
+	\item Characters can become invisible via the \refact{hide} action.
+	\item Characters become visible when they \refact{walk} to a new location.
+\end{itemize}}
+
+\newpage
+
+\subsection{Constants} \label{sec:constants}
+
+Constants are special values that can be assigned to some \hyperref[sec:variables]{variables}. Constants are not explicitly defined; they are implied by which \hyperref[sec:mechanics]{mechanics} are enabled. For example, the \refconst{Ghost} constant is one possible value for a \refvar{health} variable, and it represents a character who has been raised from the dead. However, if the \refmech{Undead} mechanic is not enabled, this constant is not available, even if the other constants that can be assigned to \refvar{health} variables are.
+
+One use of constants is the items that characters carry and use in the story. MicroTales elements cannot be created or removed, but items are not first class elements. Each character has a \refvar{left} and \refvar{right} hand variable, and the possible values that can be assigned are the item constants or \None to represent holding nothing. This means each character can hold up to two items, one in each hand. Consider the \refact{sell} action, where a character trades an item for a \refconst{Coin}. The action's precondition requires that the character have the item they are selling in either their \refvar{left} or \refvar{right} hand. The effects of the action replace that hand's value with a \refconst{Coin} constant, effectively destroying the original item and creating a new \refconst{Coin} item.
+
+\defconst{BanishPotion}{
+\begin{itemize}
+  \item Only available when \refmech{Undead} is enabled.
+	\item This is a potion item that can be held in a character's \refvar{left} or \refvar{right} hand.
+	\item Allows any character to \refact{banish} a \refconst{Ghost}, setting its \refvar{health} to \refconst{Dead}.
+	\item When \refmech{Alchemy} is enabled, it can be created from a \refconst{Flower} via the \refact{brew} action.
+\end{itemize}}
+
+\defconst{CharmPotion}{
+\begin{itemize}
+  \item Only available when \refmech{Enchantment} is enabled.
+	\item This is a potion item that can be held in a character's \refvar{left} or \refvar{right} hand.
+	\item Allows any character to \refact{charm} another, causing the target's \refvar{relationship} toward the charmer to improve.
+	\item When \refmech{Alchemy} is enabled, it can be \refact{brew}ed from a \refconst{Flower}.
+\end{itemize}}
+
+\defconst{Coin}{
+\begin{itemize}
+  \item Only available when \refmech{Commerce} or \refmech{Theft} is enabled.
+	\item This is a metal item that can be held in a character's \refvar{left} or \refvar{right} hand.
+	\item The \refgoal{greedy} goal is satisfied by having coins.
+	\item Any item can be converted into a coin via the \refact{sell} action at the \refloc{market}.
+	\item When \refmech{Crafting} is enabled, it can be be \refact{craft}ed from any other metal item or into any other metal item.
+\end{itemize}}
+
+\defconst{Crown}{
+\begin{itemize}
+  \item Only available when \refmech{Monarchy} is enabled.
+	\item This is a metal item that can be held in a character's \refvar{left} or \refvar{right} hand.
+	\item Needed for a character to \refact{enthrone} themselves in a \refloc{castle} to become the \refvar{monarch}.
+	\item When \refmech{Crafting} is enabled, it can be be \refact{craft}ed from any other metal item or into any other metal item.
+\end{itemize}}
+
+\defconst{CursePotion}{
+\begin{itemize}
+  \item Only available when \refmech{Sickness} or \refmech{Undead} is enabled.
+	\item This is a potion item that can be held in a character's \refvar{left} or \refvar{right} hand.
+	\item Allows any character to \refact{curse} another, lowing the target's \refvar{health}.
+	\item When \refmech{Alchemy} is enabled, it can be \refact{brew}ed from a \refconst{Flower}.
+\end{itemize}}
+
+\defconst{Dead}{
+\begin{itemize}
+  \item Only available when \refmech{Sickness} or \refmech{Violence} is enabled.
+	\item Assigned to a character's \refvar{health} to indicate they are not alive and cannot do most actions.
+	\item The \refact{attack}, \refact{curse}, and \refact{die} actions can kill a character.
+	\item The \refact{raise} and \refact{rise} actions can make a dead character a \refconst{Ghost}.
+\end{itemize}}
+
+\defconst{Enemy}{
+\begin{itemize}
+  \item Assigned to a \refvar{relationship} to indicate the first character regards the second negatively.
+	\item The \refgoal{spiteful} goal is satisfied by other characters regarding a character this way.
+	\item The \refgoal{vengeful} goal is satisfied by a character not regarding others this way, or by a character's enemies being dead.
+	\item The \refact{arrest}, \refact{attack}, \refact{banish}, \refact{curse}, and \refact{take} actions can cause a \refvar{relationship} set to \None to change to this value.
+\end{itemize}}
+
+\defconst{Flower}{
+\begin{itemize}
+  \item Only available when \refmech{Alchemy} or \refmech{Marriage} is enabled.
+	\item This is an item that can be held in a character's \refvar{left} or \refvar{right} hand.
+	\item Can \refact{grow} in a \refloc{forest}.
+	\item When \refmech{Alchemy} is enabled, this \refvar{item} is in every \refloc{forest} by default.
+	\item When \refmech{Alchemy} is enabled, it can be \refact{brew}ed into any potion.
+\end{itemize}}
+
+\defconst{Friend}{
+\begin{itemize}
+  \item Assigned to a \refvar{relationship} to indicate the first character regards the second positively.
+	\item The \refgoal{friendly} goal is satisfied by a character regarding others this way, or by a character's friends becoming healthy.
+	\item The \refgoal{kind} goal is satisfied by other characters regarding a character this way.
+	\item The \refact{charm}, \refact{give}, \refact{heal}, and \refact{release} actions can cause a \refvar{relationship} set to \None to change to this value.
+\end{itemize}}
+
+\defconst{Ghost}{
+\begin{itemize}
+  \item Only available when \refmech{Undead} is enabled.
+	\item Assigned to a character's \refvar{health} to indicate they are a ghost which can only take the \refact{curse} and \refact{walk} actions.
+	\item The \refact{rise} and \refact{raise} actions can make a \refconst{Dead} character into a ghost.
+	\item The \refact{banish} action can make a ghost \refconst{Dead}.
+\end{itemize}}
+
+\defconst{HealPotion}{
+\begin{itemize}
+  \item Only available when \refmech{Healing} is enabled.
+	\item This is a potion item that can be held in a character's \refvar{left} or \refvar{right} hand.
+	\item Allows any character to \refact{heal} another, changing their \refvar{health} to \refconst{Healthy}.
+	\item When \refmech{Alchemy} is enabled, it can be \refact{brew}ed from a \refconst{Flower}.
+\end{itemize}}
+
+\defconst{Healthy}{
+\begin{itemize}
+  \item Only available when \refmech{Sickness} or \refmech{Violence} is enabled.
+	\item Assigned to a character's \refvar{health} to indicate they are able to take most actions.
+	\item The \refact{heal} and \refact{recover} actions can make a \refconst{Hurt} character healthy.
+	\item The \refact{attack}, \refact{curse}, and \refact{sicken} actions can make a healthy character \refconst{Hurt}.
+\end{itemize}}
+
+\defconst{HidePotion}{
+\begin{itemize}
+  \item Only available when \refmech{Stealth} is enabled.
+	\item This is a potion item that can be held in a character's \refvar{left} or \refvar{right} hand.
+	\item Allows any character to \refact{hide}, changing \refvar{visible} to \element{False}.
+	\item When \refmech{Alchemy} is enabled, it can be \refact{brew}ed from a \refconst{Flower}.
+\end{itemize}}
+
+\defconst{Hurt}{
+\begin{itemize}
+  \item Only available when \refmech{Sickness} or \refmech{Violence} is enabled.
+	\item Assigned to a character's \refvar{health} to indicate they are able to take most actions but cannot \refact{walk}.
+	\item The \refact{attack}, \refact{curse}, and \refact{sicken} actions can make a \refconst{Healthy} character hurt.
+	\item The \refact{attack}, \refact{curse}, and \refact{die} actions can make a hurt character \refconst{Dead}.
+\end{itemize}}
+
+\defconst{Ore}{
+\begin{itemize}
+  \item Only available when \refmech{Crafting} is enabled.
+	\item This is a metal item that can be held in a character's \refvar{left} or \refvar{right} hand.
+	\item When \refmech{Crafting} is enabled, this \refvar{item} is in every \refloc{cave} by default.
+	\item When \refmech{Crafting} is enabled, it can be be \refact{craft}ed from any other metal item or into any other metal item.
+\end{itemize}}
+
+\defconst{RaisePotion}{
+\begin{itemize}
+  \item Only available when \refmech{Undead} is enabled.
+	\item This is a potion item that can be held in a character's \refvar{left} or \refvar{right} hand.
+	\item Allows any character to \refact{raise} a \refconst{Dead} character into a \refconst{Ghost}.
+	\item When \refmech{Alchemy} is enabled, it can be \refact{brew}ed from a \refconst{Flower}.
+\end{itemize}}
+
+\defconst{Sword}{
+\begin{itemize}
+  \item Only available when \refmech{Crime}, \refmech{Theft}, or \refmech{Violence} is enabled.
+	\item This is a metal item that can be held in a character's \refvar{left} or \refvar{right} hand.
+	\item Most characters need this to \refact{arrest} and \refact{attack} others.
+	\item Most characters need this to \refact{take} an item when the victim is \refconst{Healthy}.
+	\item When \refmech{Crafting} is enabled, it can be be \refact{craft}ed from any other metal item or into any other metal item.
+\end{itemize}}
+
+\defconst{TeleportPotion}{
+\begin{itemize}
+  \item Only available when \refmech{Teleportation} is enabled.
+	\item This is a potion item that can be held in a character's \refvar{left} or \refvar{right} hand.
+	\item Allows any character to \refact{teleport} to any location.
+	\item When \refmech{Alchemy} is enabled, it can be \refact{brew}ed from a \refconst{Flower}.
+\end{itemize}}
+
+\newpage
+
+\subsection{Goals} \label{sec:goals}
+
+Goals are objectives. There are two kinds of goals in MicroTales, {\em character goals} and {\em story goals}. Character goals are personal objectives that individual characters want to achieve. Story goals are objectives that the storyteller should try to achieve with the story as a whole.
+
+Similar to \hyperref[sec:variables]{variables}, a goal is one of the names define below followed by zero to many arguments. Figure \ref{fig:problemex} shows an example list of goals. In YAML, it is the key \element{goals} followed by a sequence of sequences. If the sequence is a character goal, the first element is the name of one of the problem's \hyperref[sec:characters]{characters}. If the sequence is a story goal, this name is omitted. The next elements in both types are the goal name (defined below), followed by the goal's arguments.
+
+For example, this character goal in YAML format says that \element{John} wants \element{John} to be the \refvar{monarch}:
+
+\centerline{\element{[John, ambitious, John]}}
+
+\noindent The first part, \element{John}, specifies which character has this goal. The rest specifies the goal \element{ambitious(John)}, which is the objective that \element{John} be the \refvar{monarch}. Characters can also have goals for other characters:
+
+\centerline{\element{[Sheriff, ambitious, John]}}
+
+\noindent The goal of \element{ambitious(John)} is the same, but it is held by the \element{Sheriff}. The \element{Sheriff} also wants \element{John} to be \refvar{monarch}.
+
+To make this a story goal instead of a character goal, we simply omit the character from the start of the sequence:
+
+\centerline{\element{[ambitious, John]}}
+
+\noindent This means that \element{ambitious(John)} is a goal for the story as a whole rather than any particular character. The storyteller should try to tell a story where \element{John} becomes the \refvar{monarch}.
+
+Two character goals always apply and do not need to be explicitly listed. When \refmech{Sickness} or \refmech{Violence} is enabled, all characters prefer being \refconst{Healthy} over \refconst{Hurt} and prefer \refconst{Hurt} over \refconst{Dead}. Second, if \refmech{Undead} is enabled, all \refconst{Ghost}s are \refgoal{vengeful}. This means they want to kill any character who is an \refconst{Enemy}.
+
+Goals are persistent, meaning they do not go away once they are achieved. For example, when a character is \refgoal{greedy}, they want \refconst{Coin}s. Once both of their hands are holding \refconst{Coin}s, they cannot have more, but they do not stop being \refgoal{greedy}. If they should ever lose one of their coins, they will again want more.
+
+MicroTales does not define the relative importance of one goal to another, and when a goal can be achieved in multiple ways, it only defines ordinal preferences. For example, if a character is both \refgoal{greedy} and \refgoal{friendly}, MicroTales does not specify whether it is more important to that character to have \refconst{Coin}s or \refconst{Friend}s; this is up to the storyteller. Similarly, a \refgoal{friendly} character would prefer to have 2 \refconst{Friend}s over 1 \refconst{Friend}, but it is not necessarily twice as good to have 2 friends than it is to have 1. Again, this is left up to the storyteller.
+
+MicroTales tries to avoid imposing any particular model of what makes a good story. Some good stories may not achieve goals, and stories that achieve goals are not necessarily good stories. If goals can be ignored, why define them at all? First, MicroTales is meant to study the challenges of story planning. Goals provide constraints that make planning a story challenging because the storyteller needs to look ahead to reason about what is and is not possible when deciding what actions to take. Second, in an interactive setting, goals are what will be communicated to players about what the characters want and what the objectives are for the story. Stories are meant to involve multiple active characters, so anticipating how non-player characters will act requires information about what they want.
+
+\defgoal{ambitious}{\param{character}}{
+\begin{itemize}
+	\item Only available when \refmech{Monarchy} is enabled.
+	\item Achieved when \param{character} is the \refvar{monarch}.
+	\item When \refmech{Marriage} is enabled, this goal is also achieved when \param{character}'s \refvar{spouse} is the \refvar{monarch}.
+\end{itemize}}
+
+\defgoal{chaotic}{}{
+\begin{itemize}
+	\item Only available when \refmech{Crime} is enabled.
+	\item Achieved by maximizing the number of characters who are \refvar{criminal}s, are not \refconst{Dead}, and free (not in a \refloc{jail}).
+	\item Opposed to \refgoal{lawful}.
+	\item This goal improves each time an additional character meets the above requirements. Typically this happens when a living free character commits a crime, but it can also happen when a criminal leaves a \refloc{jail} or is \refact{raise}d from the dead. Potential crimes include the \refact{arrest}, \refact{attack}, \refact{curse}, \refact{release}, and \refact{take} actions. Characters can leave a \refloc{jail} via the \refact{teleport} action or the \refact{walk} action if the jail is not \refvar{locked}, perhaps because of the \refact{jailbreak} or \refact{release} actions. Characters can return from the dead via the \refact{raise} and \refact{rise} actions.
+	\item This goal worsens each time a character stops meeting the above requirements. This can happen when a character's crimes are erased, when a criminal moves to a \refloc{jail}, or when a criminal dies. Crimes are removed via the \refact{forgive} and \refact{repent} actions. Characters can move to a \refloc{jail} via the \refact{arrest}, \refact{teleport}, and \refact{walk} actions. Characters can die via the \refact{attack}, \refact{curse}, and \refact{die} actions.
+\end{itemize}}
+
+\defgoal{friendly}{\param{character}}{
+\begin{itemize}
+	\item Achieved by maximizing the number of other characters who \param{character} regards as a \refconst{Friend} and whose \refvar{health} is \refconst{Healthy}. In other words, this goal is achieved by maximizing the number of \param{other} characters for whom \element{\refvar{relationship}(character, other) = \refconst{Friend}} and \element{\refvar{health}(other) = \refconst{Healthy}}. 
+	\item Opposed to \refgoal{vengeful}.
+	\item This goal improves each time \param{character} regards a new \refconst{Healthy} character as a \refconst{Friend} or someone \param{character} regards as a \refconst{Friend} becomes \refconst{Healthy}. Relationships can improve via the \refact{charm}, \refact{give}, \refact{heal}, or \refact{release} actions. Characters can become \refconst{Healthy} via the \refact{heal} and \refact{recover} actions.
+	\item This goal worsens each time \param{character} stops regarding a \refconst{Healthy} character as a \refconst{Friend} or someone \param{character} regards as a \refconst{Friend} stops being \refconst{Healthy}. Relationships can degrade via the \refact{arrest}, \refact{attack}, \refact{banish}, \refact{curse}, and \refact{take} actions. Characters can stop being \refconst{Healthy} via the \refact{attack}, \refact{curse}, and \refact{sicken} actions.
+\end{itemize}}
+
+\defgoal{greedy}{\param{character}}{
+\begin{itemize}
+  \item Only available when \refmech{Commerce} or \refmech{Theft} is enabled.
+	\item Achieved by maximizing the number of \refconst{Coin} items \param{character} is holding.
+\end{itemize}}
+
+\defgoal{hateful}{\param{character}}{
+\begin{itemize}
+  \item Only available when \refmech{Sickness} or \refmech{Violence} is enabled.
+	\item Achieved when \param{character}'s \refvar{health} is not \refconst{Healthy}.
+	\item Opposed to \refgoal{loving}.
+\end{itemize}}
+
+\defgoal{homesick}{\param{character}, \param{location}}{
+\begin{itemize}
+	\item Achieved when \param{character}'s \refvar{location} is \param{location}.
+\end{itemize}}
+
+\defgoal{kind}{\param{character}}{
+\begin{itemize}
+	\item Achieved by maximizing the number of other characters who regard \param{character} as a \refconst{Friend}. In other words, this goal is achieved by maximizing the number of \param{other} characters for whom \element{\refvar{relationship}(other, character) = \refconst{Friend}}.
+	\item Opposed to \refgoal{spiteful}.
+	\item This goal improves each time an additional other character regards \param{character} a \refconst{Friend}. Relationships can improve via the \refact{charm}, \refact{give}, \refact{heal}, or \refact{release} actions.
+	\item This goal worsens each time another character stops regarding \param{character} as a \refconst{Friend}. Relationships can degrade via the \refact{arrest}, \refact{attack}, \refact{banish}, \refact{curse}, and \refact{take} actions.
+\end{itemize}}
+
+\defgoal{lawful}{}{
+\begin{itemize}
+	\item Only available when \refmech{Crime} is enabled.
+	\item Achieved by maximizing the number of characters who are not \refvar{criminal}s or who are \refvar{criminal}s but are \refconst{Dead} or in a \refloc{jail}.
+	\item Opposed to \refgoal{chaotic}.
+	\item This goal improves each time an additional character meets the above requirements. This can happen when the \refact{forgive} or \refact{repent} actions make the character no longer a criminal, when a criminal moves to a \refloc{jail}, or when a criminal dies.
+	\item This goal worsens each time a character stops meeting the above requirements. Typically this happens when a living free character commits a crime (potential crimes include the \refact{arrest}, \refact{attack}, \refact{curse}, \refact{release}, and \refact{take} actions), but it can also happen when a criminal leaves a \refloc{jail} or returns from the dead via the \refact{raise} or \refact{rise} actions.
+\end{itemize}}
+
+\defgoal{loving}{\param{character}}{
+\begin{itemize}
+  \item Only available when \refmech{Sickness} or \refmech{Violence} is enabled.
+	\item Achieved when \param{character}'s \refvar{health} is \refconst{Healthy}.
+	\item Opposed to \refgoal{hateful}.
+\end{itemize}}
+
+\defgoal{smitten}{\param{character}, \param{spouse}}{
+\begin{itemize}
+	\item Only available when \refmech{Marriage} is enabled.
+	\item Achieved when \param{character}'s \refvar{spouse} is \param{spouse}.
+\end{itemize}}
+
+\defgoal{spiteful}{\param{character}}{
+\begin{itemize}
+	\item Achieved by maximizing the number of other characters who regard \param{character} as an \refconst{Enemy}. In other words, this goal is achieved by maximizing the number of \param{other} characters for whom \element{\refvar{relationship}(other, character) = \refconst{Enemy}}.
+	\item Opposed to \refgoal{kind}.
+	\item This goal improves each time an additional other character regards \param{character} an \refconst{Enemy}. Relationships can degrade via the \refact{arrest}, \refact{attack}, \refact{banish}, \refact{curse}, and \refact{take} actions. 
+	\item This goal worsens each time another character stops regarding \param{character} as an \refconst{Enemy}. Relationships can improve via the \refact{charm}, \refact{give}, \refact{heal}, or \refact{release} actions.
+\end{itemize}}
+
+\defgoal{vengeful}{\param{character}}{
+\begin{itemize}
+	\item Achieved by maximizing the number of other characters who \param{character} does not regard as an \refconst{Enemy} or whose \refvar{health} is not \refconst{Dead}. In other words, this goal is achieved by maximizing the number of \param{other} characters for whom \element{\refvar{relationship}(character, other) $\neq$ \refconst{Enemy}} or \element{\refvar{health}(other) $\neq$ \refconst{Dead}}.
+	\item Opposed to \refgoal{friendly}.
+	\item This goal improves each time \param{character} stops regarding another non-\refconst{Dead} character as an \refconst{Enemy} or someone that \param{character} regards as an \refconst{Enemy} becomes \refconst{Dead}. Relationships can improve via the \refact{charm}, \refact{give}, \refact{heal}, or \refact{release} actions. Characters can die via the \refact{attack}, \refact{curse}, and \refact{die} actions.
+	\item This goal worsens each time \param{character} regards another non-\refconst{Dead} character as an \refconst{Enemy} or someone that \param{character} regards as an \refconst{Enemy} stop being \refconst{Dead}. Relationships can degrade via the \refact{arrest}, \refact{attack}, \refact{banish}, \refact{curse}, and \refact{take} actions. Characters can stop being \refconst{Dead} via the \refact{raise} and \refact{rise} actions.
+\end{itemize}}
+
+\newpage
+
+\subsection{Actions} \label{sec:actions}
+
+Actions are events that happen in a story. An action has preconditions that limit when it can happen and effects that modify the world state.
+
+A problem does not explicitly define actions; they are implied by the other elements in the problem. Any time an action is enabled by a \hyperref[sec:mechanics]{mechanic} it is available in a story. For example, the \refact{enthrone} action is always available in every story where \refmech{Monarchy} is enabled, though it can only happen when a character is in a \refloc{castle} and holding a \refconst{Crown}.
+
+Like \hyperref[sec:variables]{variables} and \hyperref[sec:goals]{goals}, actions are parameterized. The list of parameters are given in parentheses after the name.
+
+An action's preconditions are meant as minimal restrictions for an action to seem believable based on the world state. Action preconditions do not attempt to restrict when an action makes narrative sense. For example, it probably does not make narrative sense for a \refgoal{greedy} character to \refact{give} away a \refconst{Coin}, but MicroTales does not prevent this because one purpose of MicroTales is to study different models of when actions make sense. Ideally, a character's actions are determined by their character goals and the story goals, though this is not required, and it is not enforced by preconditions. To study the generation of good stories, it must be possible to generate bad stories.
+
+Some actions have an active version that is done by a character and a passive version that simply happens. For example, when a character is \refconst{Hurt}, they can be made \refconst{Healthy} again via by the \refact{heal} action, which is actively done by a character, but they can also simply get better via the \refact{recover} action. Actions not taken by characters provide flexibility in solving problems, but may be perceived as a {\em deus ex machina}. 
+
+For brevity, we list preconditions and effects on all variables, even if they are not used in a problem. For example, many actions require that a character not be \refconst{Dead}, but this only applies if \refvar{health} variables exist. If the \refmech{Sickness} or \refmech{Violence} \hyperref[sec:mechanics]{mechanics} are not enabled, \refvar{health} variables do not exist, so preconditions and effects on those variables are ignored.
+
+We use a few common shorthand phrases in action preconditions:
+\begin{itemize}
+	\item ``A character is alive,'' means the character's \refvar{health} variable is \refconst{Healthy} or \refconst{Hurt}.
+	\item ``A character is holding an \param{item},'' means that character's \refvar{left} or \refvar{right} hand variable is set to that item constant.
+	\item ``A character has an empty hand,'' means that character's \refvar{left} or \refvar{right} hand variable is set to \None.
+	\item ``A character is now holding one fewer \param{item}'' means that one of their hands that was previously \param{item} is now \None. In other words, if \refvar{left} was \param{item}, then \refvar{left} is now \None. If \refvar{left} was not \param{item} and \refvar{right} was \param{item}, then \refvar{right} is now \None. (Note it is possible for a character to be holding two copies of the same item; only one is removed.)
+	\item ``A character is now holding one additional \param{item}'' means that one of their hands that was previously \None is now \param{item}.
+\end{itemize}
+
+The only actions that always available in every problem are basic movement, the \refact{walk} action, and basic item interactions, the \refact{pickup}, \refact{drop}, \refact{give}, and \refact{trade} actions.
+
+\defact{arrest}{\param{character}, \param{target}, \param{jail}}{
+\begin{pre}
+  \item Only available when \refmech{Crime} is enabled.
+	\item The \param{jail} must be any location of type \refloc{jail}.
+	\item The \param{character} and \param{target} character may be the same.
+  \item The \param{character} is alive.
+	\item The \param{character} is holding a \refconst{Sword}.
+	\item The \param{target} character is alive.
+	\item The \param{target} is \refvar{visible}.
+	\item The \param{target} is not in a \refvar{locked} \refloc{jail}.
+	\item The \param{character} and \param{target} are at the same \refvar{location}.
+\end{pre}
+\begin{eff}
+  \item The \param{target}'s \refvar{location} is now the \param{jail}.
+	\item The \param{jail} is now \refvar{locked}.
+  \item If the \param{target} is not a \refvar{criminal}, the \param{character} is now a \refvar{criminal}.
+	\item If the \refvar{relationship} between \param{target} and \param{character} was \refconst{Friend}, it is now \None.
+	\item If the \refvar{relationship} between \param{target} and \param{character} was \None, it is now \refconst{Enemy}.
+\end{eff}}
+
+\defact{attack}{\param{character}, \param{target}}{
+\begin{pre}
+  \item Only available when \refmech{Violence} is enabled.
+	\item The \param{character} and \param{target} character may be the same.
+  \item The \param{character} is alive.
+	\item The \param{character} is holding a \refconst{Sword} or is a \refchar{knight}.
+	\item The \param{target} character is alive.
+	\item The \param{target} is \refvar{visible}.
+	\item The \param{character} and \param{target} are at the same \refvar{location}.
+\end{pre}
+\begin{eff}
+  \item If the \param{target} was \refconst{Healthy}, they are not \refconst{Hurt}.
+	\item If the \param{target} was \refconst{Hurt}, they are not \refconst{Dead}.
+	\item If the \param{target} is not a \refvar{criminal}, the \param{character} is now a \refvar{criminal}.
+	\item If the \refvar{relationship} between \param{target} and \param{character} was \refconst{Friend}, it is now \None.
+	\item If the \refvar{relationship} between \param{target} and \param{character} was \None, it is now \refconst{Enemy}.
+	\item If the \param{character}'s \refvar{spouse} was \param{other}, then \param{character}'s spouse is now \None and \param{other}'s \refvar{spouse} is now \None.
+\end{eff}}
+
+\defact{banish}{\param{character}, \param{target}}{
+\begin{pre}
+  \item Only available when \refmech{Undead} is enabled.
+  \item The \param{character} is alive.
+	\item The \param{character} is holding a \refconst{BanishPotion} or is a \refchar{cleric}.
+	\item The \param{target} character is a \refconst{Ghost}.
+	\item The \param{character} and \param{target} are at the same \refvar{location}.
+\end{pre}
+\begin{eff}
+  \item The \param{target} is now \refconst{Dead}.
+	\item The \param{target}'s \refvar{location} is now \None.
+	\item If \param{character} is not a \refchar{cleric}, they are now holding one fewer \refconst{BanishPotion}.
+	\item If the \refvar{relationship} between \param{target} and \param{character} was \refconst{Friend}, it is now \None.
+	\item If the \refvar{relationship} between \param{target} and \param{character} was \None, it is now \refconst{Enemy}.
+\end{eff}}
+
+\defact{brew}{\param{character}, \param{potion}}{
+\begin{pre}
+  \item Only available when \refmech{Alchemy} is enabled.
+	\item The \param{potion} is a \hyperref[sec:constants]{potion item constant}.
+  \item The \param{character} is alive.
+	\item The \param{character} is holding a \refconst{Flower}.
+	\item The \param{character} is in a \refloc{laboratory} or is a \refchar{sorcerer}.
+\end{pre}
+\begin{eff}
+	\item The \param{character} is now holding one fewer \refconst{Flower}.
+	\item The \param{character} is now holding one additional \param{potion}.
+\end{eff}}
+
+\defact{charm}{\param{character}, \param{target}}{
+\begin{pre}
+  \item Only available when \refmech{Enchantment} is enabled.
+	\item The \param{character} and \param{target} character are different.
+  \item The \param{character} is alive.
+	\item The \param{character} is holding a \refconst{CharmPotion} or is a \refchar{noble}.
+	\item The \param{target} character is alive.
+	\item The \param{target} character is \refvar{visible}.
+	\item The \param{character} and \param{target} are at the same \refvar{location}.
+\end{pre}
+\begin{eff}
+	\item If the \refvar{relationship} between \param{target} and \param{character} was \refconst{Enemy}, it is now \None.
+	\item If the \refvar{relationship} between \param{target} and \param{character} was \None, it is now \refconst{Friend}.
+	\item If \param{character} is not a \refchar{noble}, they are now holding one fewer \refconst{CharmPotion}.
+\end{eff}}
+
+\defact{craft}{\param{character}, \param{material}, \param{item}}{
+\begin{pre}
+  \item Only available when \refmech{Crafting} is enabled.
+	\item The \param{material} is a \hyperref[sec:constants]{metal item constant}.
+	\item The \param{item} is a \hyperref[sec:constants]{metal item constant}.
+	\item The \param{material} and \param{item} are different.
+	\item The \param{character} is alive.
+	\item The \param{character} is holding \param{material}.
+	\item The \param{character} is at a \refloc{workshop}.
+\end{pre}
+\begin{eff}
+  \item The \param{character} is no longer holding the \param{material}.
+	\item The \param{character} is now holding the \param{item}.
+\end{eff}}
+
+\defact{curse}{\param{character}, \param{target}}{
+\begin{pre}
+  \item Only available when \refmech{Sickness} or \refmech{Undead} is enabled.
+	\item The \param{character} and \param{target} character may be the same.
+	\item The \param{character} is alive.
+	\item The \param{character} is holding a \refconst{CursePotion} or is a \refconst{Ghost}.
+	\item The \param{target} is alive.
+	\item The \param{target} is \refvar{visible}.
+	\item The \param{character} and \param{target} are at the same \refvar{location}.
+\end{pre}
+\begin{eff}
+  \item If the \param{target} was \refconst{Healthy}, they are now \refconst{Hurt}.
+	\item If the \param{target} was \refconst{Hurt}, they are now \refconst{Dead}.
+	\item If the \param{target} is not a \refconst{Ghost}, they are now holding one fewer \refconst{CursePotion}.
+	\item If the \param{target} is not a \refvar{criminal}, the \param{character} is now a \refvar{criminal}.
+	\item If the \refvar{relationship} between \param{target} and \param{character} was \refconst{Friend}, it is now \None.
+	\item If the \refvar{relationship} between \param{target} and \param{character} was \None, it is now \refconst{Enemy}.
+	\item If the \param{target}'s \refvar{spouse} was \param{other}, then \param{target}'s spouse is now \None and \param{other}'s \refvar{spouse} is now \None.
+\end{eff}}
+
+\defact{die}{\param{character}}{
+\begin{pre}
+  \item Only available when \refmech{Sickness} or \refmech{Violence} is enabled.
+	\item The \param{character} is \refconst{Hurt}.
+\end{pre}
+\begin{eff}
+  \item The \param{character} is now \refconst{Dead}.
+	\item The \param{character} is now \refvar{visible}.
+	\item If the \param{character}'s \refvar{spouse} was \param{other}, then \param{character}'s spouse is now \None and \param{other}'s \refvar{spouse} is now \None.
+\end{eff}}
+
+\defact{drop}{\param{character}, \param{item}}{
+\begin{pre}
+	\item The \param{item} is an \hyperref[sec:constants]{item constant}.
+	\item The \param{character} is alive.
+	\item The \param{character} is holding the \param{item}.
+	\item The \param{character}'s \refvar{location} is a \refloc{cave}, \refloc{crossroads}, \refloc{forest}, or \refloc{village}.
+\end{pre}
+\begin{eff}
+  \item The \param{character} is no longer holding the \param{item}.
+	\item The \refvar{item} at the \param{character}'s \refvar{location} is now \param{item}. (Note: This may replace and permanently ``destroy'' the previous \refvar{item} at this \refvar{location}.)
+\end{eff}}
+
+\defact{enthrone}{\param{character}}{
+\begin{pre}
+  \item Only available when \refmech{Monarchy} is enabled.
+	\item The \param{character} is alive.
+	\item The \param{character} is holding a \refconst{Crown}.
+	\item The \param{character}'s \refvar{location} is a \refloc{castle}.
+\end{pre}
+\begin{eff}
+  \item The \refvar{monarch} is now \param{character}.
+\end{eff}}
+
+\defact{forgive}{\param{character}, \param{target}}{
+\begin{pre}
+  \item Only available when \refmech{Forgiveness} is enabled.
+	\item The \param{character} and \param{target} character may be the same.
+	\item The \param{character} is alive.
+	\item The \param{character} is a \refchar{cleric}.
+	\item The \param{target} is alive.
+	\item The \param{target} is \refvar{visible}.
+	\item The \param{target} is a \refvar{criminal}.
+	\item The \param{character} and \param{target} are at the same \refvar{location}.
+\end{pre}
+\begin{eff}
+  \item The \param{target} is no longer a \refvar{criminal}.
+\end{eff}}
+
+\defact{give}{\param{character}, \param{item}, \param{target}}{
+\begin{pre}
+	\item The \param{character} and \param{target} character are different.
+	\item The \param{item} is an \hyperref[sec:constants]{item constant}.
+	\item The \param{character} is alive.
+	\item The \param{character} is \refvar{visible}.
+	\item The \param{character} is holding the \param{item}.
+	\item The \param{target} is alive.
+	\item The \param{target} is \refvar{visible}.
+	\item The \param{target} has an empty hand.
+	\item The \param{character} and \param{target} are at the same \refvar{location}.
+\end{pre}
+\begin{eff}
+  \item The \param{target} now has one additional \param{item}.
+	\item The \param{character} now has one fewer \param{item}.
+	\item If the \refvar{relationship} between \param{target} and \param{character} was \refconst{Enemy}, it is now \None.
+	\item If the \refvar{relationship} between \param{target} and \param{character} was \None, it is now \refconst{Friend}.
+\end{eff}}
+
+\defact{grow}{\param{forest}}{
+\begin{pre}
+  \item Only available when \refmech{Alchemy} or \refmech{Marriage} is enabled.
+	\item The \param{forest} is a \refloc{forest}.
+	\item The \param{forest}'s \refvar{item} is \None.
+\end{pre}
+\begin{eff}
+  \item The \param{forest}'s \refvar{item} is now \refconst{Flower}.
+\end{eff}}
+
+\defact{heal}{\param{character}, \param{target}}{
+\begin{pre}
+  \item Only available when \refmech{Healing} is enabled.
+	\item The \param{character} and \param{target} character may be the same.
+	\item The \param{character} is alive.
+	\item The \param{character} is holding a \refconst{HealPotion} or is a \refchar{cleric}.
+	\item The \param{target} is \refconst{Hurt}.
+	\item The \param{target} is \refvar{visible}.
+	\item The \param{character} and \param{target} are at the same \refvar{location}.
+\end{pre}
+\begin{eff}
+  \item The \param{target} is now \refconst{Healthy}.
+	\item If the \param{character} is not a \refchar{cleric}, the \param{character} now has one fewer \refconst{HealPotion}.
+	\item If the \refvar{relationship} between \param{target} and \param{character} was \refconst{Enemy}, it is now \None.
+	\item If the \refvar{relationship} between \param{target} and \param{character} was \None, it is now \refconst{Friend}.
+\end{eff}}
+
+\defact{hide}{\param{character}}{
+\begin{pre}
+  \item Only available when \refmech{Stealth} is enabled.
+	\item The \param{character} is alive.
+	\item The \param{character} is \refvar{visible}.
+	\item The \param{character} is at a \refloc{camp} or is a \refchar{bandit}.
+\end{pre}
+\begin{eff}
+  \item The \param{character} is no longer \refvar{visible}.
+\end{eff}}
+
+\defact{jailbreak}{\param{jail}}{
+\begin{pre}
+  \item Only available when \refmech{Crime} is enabled.
+	\item The \param{jail} is a \refloc{jail}.
+	\item The \param{jail} is \refvar{locked}.
+\end{pre}
+\begin{eff}
+  \item The \param{jail} is no longer \refvar{locked}.
+\end{eff}}
+
+\defact{loot}{\param{character}, \param{item}, \param{target}}{
+\begin{pre}
+  \item Only available when \refmech{Sickness} or \refmech{Violence} is enabled.
+	\item The \param{item} is an \hyperref[sec:constants]{item constant}.
+	\item The \param{character} is alive.
+	\item The \param{target} is \refconst{Dead}.
+	\item The \param{character} and \param{target} are at the same \refvar{location}.
+\end{pre}
+\begin{eff}
+  \item The \param{character} is now holding one additional \param{item}.
+	\item The \param{target} is now holding one fewer \param{item}.
+\end{eff}}
+
+\defact{marry}{\param{character}, \param{spouse}}{
+\begin{pre}
+  \item Only available when \refmech{Marriage} is enabled.
+	\item The \param{character} and \param{spouse} character are different.
+	\item The \param{character} is alive.
+	\item The \param{character} is \refvar{visible}.
+	\item The \refvar{spouse} of \param{character} is \None.
+	\item The \param{spouse} is alive.
+	\item The \param{spouse} is \refvar{visible}.
+	\item The \refvar{spouse} of \param{spouse} is \None.
+	\item The \param{character} and \param{spouse} are at the same \refvar{location}.
+	\item The \param{character}'s and \param{spouse}'s \refvar{location} is a \refloc{chapel}.
+\end{pre}
+\begin{eff}
+  \item The \refvar{spouse} of \param{character} is now \param{spouse}.
+	\item The \refvar{spouse} of \param{spouse} is now \param{character}.
+\end{eff}}
+
+\defact{pickup}{\param{character}}{
+\begin{pre}
+  \item The \param{character} is alive.
+	\item The \param{character}'s \refvar{location} is a \refloc{cave}, \refloc{crossroads}, \refloc{forest}, or \refloc{village}.
+	\item The \refvar{item} at the \param{character}'s \refvar{location} is an \hyperref[sec:constants]{item constant}.
+	\item The \param{character} has an empty hand.
+\end{pre}
+\begin{eff}
+	\item The \param{character} is now holding one more of the \refvar{item} that was at their \refvar{location}.
+  \item The \refvar{item} at the \param{character}'s \refvar{location} is now \None.
+\end{eff}}
+
+\defact{raise}{\param{character}, \param{target}, \param{graveyard}}{
+\begin{pre}
+  \item Only available when \refmech{Undead} is enabled.
+	\item The \param{character} is alive.
+	\item The \param{character} is holding a \refconst{RaisePotion}.
+	\item The \param{target} is \refconst{Dead}.
+	\item The \param{character} and \param{target} are at the same \refvar{location} or the \param{character} is at the \param{graveyard}.
+\end{pre}
+\begin{eff}
+	\item The \param{character} is now holding one fewer \refconst{RaisePotion}.
+  \item The \param{target} is now a \refconst{Ghost}.
+	\item The \param{target}'s \refvar{location} is now the \param{graveyard}.
+	\item The \param{target}'s \refvar{left} and \refvar{right} hands are now \None.
+\end{eff}}
+
+\defact{recover}{\param{character}}{
+\begin{pre}
+  \item Only available when \refmech{Sickness} or \refmech{Violence} is enabled.
+	\item The \param{character} is \refconst{Hurt}.
+\end{pre}
+\begin{eff}
+  \item The \param{character} is now \refconst{Healthy}.
+\end{eff}}
+
+\defact{release}{\param{character}, \param{jail}}{
+\begin{pre}
+  \item Only available when \refmech{Crime} is enabled.
+	\item The \param{jail} is a \refloc{jail}.
+	\item The \param{character} is alive.
+	\item The \param{jail} is \refvar{locked}.
+	\item The \param{character}'s \refvar{location} has a \hyperref[sec:locations]{path} to the \param{jail}.
+\end{pre}
+\begin{eff}
+  \item The \param{jail} is no longer \refvar{locked}.
+	\item If there exists a character whose is a \refvar{criminal} and whose \refvar{location} is the \param{jail}, the \param{character} is now a \refvar{criminal}.
+	\item For every \param{other} character whose \refvar{location} is the \param{jail}: If the \refvar{relationship} between \param{other} and \param{character} was \refconst{Enemy}, it is now \None. If the \refvar{relationship} was \None, it is now \refconst{Friend}.
+\end{eff}}
+
+\defact{repent}{\param{character}}{
+\begin{pre}
+  \item Only available when \refmech{Forgiveness} is enabled.
+	\item The \param{character} is alive.
+	\item The \param{character} is a \refvar{criminal}.
+	\item The \param{character}'s \refvar{location} is a \refloc{chapel}.
+\end{pre}
+\begin{eff}
+  \item The \param{character} is no longer a \refvar{criminal}.
+\end{eff}}
+
+\defact{rise}{\param{character}, \param{graveyard}}{
+\begin{pre}
+	\item Only available when \refmech{Undead} is enabled.
+  \item The \param{character} is \refconst{Dead}.
+\end{pre}
+\begin{eff}
+  \item The \param{character} is now a \refconst{Ghost}.
+	\item The \param{character}'s \refvar{location} is now the \param{graveyard}.
+	\item The \param{character}'s \refvar{left} and \refvar{right} hands are now \None.
+\end{eff}}
+
+\defact{sell}{\param{character}, \param{item}}{
+\begin{pre}
+  \item Only available when \refmech{Commerce} is enabled.
+	\item The \param{character} is not a \refchar{merchant}.
+	\item The \param{item} is an \hyperref[sec:constants]{item constant}.
+	\item The \param{item} is not a \refconst{Coin}.
+	\item The \param{character} is alive.
+	\item The \param{character} is holding the \param{item}.
+	\item The \param{character}'s \refvar{location} is a \refloc{market}.
+\end{pre}
+\begin{eff}
+  \item The \param{character} is now holding one fewer of the \param{item}.
+	\item The \param{character} is now holding one additional \refconst{Coin}.
+\end{eff}}
+
+\defact{sicken}{\param{character}}{
+\begin{pre}
+  \item Only available when \refmech{Sickness} is enabled.
+	\item The \param{character} is \refconst{Healthy}.
+\end{pre}
+\begin{eff}
+  \item The \param{character} is now \refconst{Hurt}.
+\end{eff}}
+
+\defact{take}{\param{character}, \param{item}, \param{target}}{
+\begin{pre}
+  \item Only available when \refmech{Theft} is enabled.
+	\item The \param{character} and \param{target} character are different.
+	\item The \param{item} is an \hyperref[sec:constants]{item constant}.
+	\item The \param{character} is alive.
+	\item The \param{character} is holding a \refconst{Sword}, or the \param{character} is a \refchar{bandit}, or the \param{target} is \refconst{Hurt}.
+	\item The \param{character} has an empty hand.
+	\item The \param{target} is \refvar{visible}.
+	\item The \param{character} and \param{target} are at the same \refvar{location}.
+\end{pre}
+\begin{eff}
+  \item The \param{character} is now holding one additional \param{item}.
+	\item The \param{target} is now holding one fewer \param{item}.
+	\item If the \param{target} is not a \refvar{criminal}, the \param{character} is now a \refvar{criminal}.
+	\item If the \refvar{relationship} between the \param{target} and \param{character} was \refconst{Friend}, it is now \None.
+	\item If the \refvar{relationship} between the \param{target} and \param{character} was \None, it is now \refconst{Enemy}.
+\end{eff}}
+
+\defact{teleport}{\param{character}, \param{location}}{
+\begin{pre}
+  \item Only available when \refmech{Teleportation} is enabled.
+	\item The \param{location} exists on the map.
+	\item The \param{character} is alive.
+	\item The \param{character} is holding a \refconst{TeleportPotion}.
+	\item The \param{character}'s \refvar{location} is not \None.
+\end{pre}
+\begin{eff}
+  \item The \param{character}'s \refvar{location} is now \param{location}.
+	\item The \param{character} is now holding one fewer \refconst{TeleportPotion}.
+\end{eff}}
+
+\defact{trade}{\param{character}, \param{price}, \param{target}, \param{item}}{
+\begin{pre}
+  \item The \param{character} and \param{target} character are different.
+	\item The \param{price} and \param{item} are different \hyperref[sec:constants]{item constants}.
+	\item The \param{character} is alive.
+	\item The \param{character} is \refvar{visible}.
+	\item The \param{character} is holding the \param{price}.
+	\item The \param{target} is alive.
+	\item The \param{target} is \refvar{visible}.
+	\item The \param{target} is holding the \param{item}.
+	\item The \param{character} and \param{target} are at the same \refvar{location}.
+\end{pre}
+\begin{eff}
+  \item The \param{character} is now holding one fewer \param{price}.
+	\item The \param{character} is now holding one additional \param{item}.
+	\item The \param{target} is now holding one fewer \param{item}.
+	\item The \param{target} is now holding one additional \param{price}.
+\end{eff}}
+
+\defact{walk}{\param{character}, \param{location}}{
+\begin{pre}
+  \item The \param{character} is \refconst{Healthy} or a \refconst{Ghost}.
+	\item There is a \hyperref[sec:locations]{path} from the \param{character}'s \refvar{location} to \param{location}.
+\end{pre}
+\begin{eff}
+  \item The \param{character}'s \refvar{location} is now \param{location}.
+	\item The \param{character} is now \refvar{visible}.
+\end{eff}}
+
+\newpage
+
+\section{Version History}
+
+Version 1.0
+\begin{itemize}
+	\item First public release of this document.
+\end{itemize}
+
+\section{License}
+
+The first version of this document was written by Stephen G. Ware and Molly Siler of the \href{http://cs.uky.edu/~sgware}{Narrative Intelligence Lab} at the \href{http://cs.uky.edu}{University of Kentucky} in September, 2025. The University of Kentucky holds the copyright to this document. It is released under a \href{https://creativecommons.org/licenses/by/4.0/deed.en}{Creative Commons Attribution 4.0 International} license (CC BY 4.0). In short, this means anyone is free to distribute it and to adapt it, even for commercial purposes, as long as they give appropriate credit to the original authors. Full details can be found in the license document. The University of Kentucky reserves all rights not explicitly granted by the license.
+
+\section{Acknowledgments}
+
+Thank you to Mira Fisher, Lasantha Senanayake, Gage Birchmeier, and other members of the University of Kentucky Narrative Intelligence Lab for their assistance in the design of MicroTales.
+
+This work was supported in part by the U.S. National Science Foundation under Grant No. 2145153 and the U.S. Army Research Office under Grant No. W911NF-24-1-0195. Any opinions, findings, conclusions, or recommendations expressed in this material are those of the authors and do not necessarily reflect the views of the National Science Foundation or the Army Research Office.
+
+\begin{center}
+\begin{tabular}{c}
+\includegraphics[width=2cm]{images/nsflogo.png}\tabularnewline
+Grant \#2145153\tabularnewline
+\end{tabular}\quad{}%
+\begin{tabular}{c}
+\includegraphics[width=2cm]{images/arologo.png}\tabularnewline
+Grant \#W911NF-24-1-0195\tabularnewline
+\end{tabular}
+\par\end{center}
+
+%------------------------------------------------------------------------------
+% Bibliography
+%------------------------------------------------------------------------------
+
+\bibliographystyle{plainnat}
+\bibliography{bibliography}
+
+\end{document}
