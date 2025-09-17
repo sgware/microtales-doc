@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Stephen G. Ware and Molly Siler" />
-  <meta name="dcterms.date" content="2025-09-10" />
+  <meta name="dcterms.date" content="2025-09-17" />
   <title>MicroTales: Story Planning Benchmark Problems that Scale along Several Dimensions Version 1.0</title>
   <style>
     html {
@@ -196,7 +196,7 @@
 Scale along Several Dimensions<br />
 <span>Version 1.0</span></h1>
 <p class="author">Stephen G. Ware and Molly Siler</p>
-<p class="date">2025-09-10</p>
+<p class="date">2025-09-17</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <h2 id="toc-title">Contents</h2>
@@ -1206,7 +1206,7 @@ problem by default.</p></li>
 <li><p>Recommended to start with at least one item of any type except a
 <a href="#const:Coin"><code>Coin</code></a>.</p></li>
 <li><p>Required not to be <a
-href="#goal:friendly"><code>friendly</code></a>.</p></li>
+href="#goal:kind"><code>kind</code></a>.</p></li>
 <li><p>Recommended to be <a
 href="#goal:greedy"><code>greedy</code></a>.</p></li>
 <li><p>Cannot <a href="#act:sell"><code>sell</code></a> items at the <a
@@ -1481,6 +1481,9 @@ name of any <a href="#sec:locations">location</a> or <code>Null</code>
 <li><p>The <em>character</em>’s current position on the map.</p></li>
 <li><p>The value <code>Null</code>means the character is nowhere on the
 map.</p></li>
+<li><p><a href="#sec:characters">Character types</a> specify default
+locations. When the specified locations are not available, the default
+value is the first location defined in the problem.</p></li>
 <li><p>The <a href="#goal:homesick"><code>homesick</code></a> goal is
 satisfied by a character being at a certain location.</p></li>
 <li><p>Many actions require that a character be at a certain location or
@@ -2295,7 +2298,7 @@ id="goal:vengeful" data-label="goal:vengeful"></span></p>
 <li><p>Achieved by maximizing the number of other characters who
 <em>character</em> does not regard as an <a
 href="#const:Enemy"><code>Enemy</code></a> or whose <a
-href="#var:health"><code>health</code></a> is not <a
+href="#var:health"><code>health</code></a> is <a
 href="#const:Dead"><code>Dead</code></a>. In other words, this goal is
 achieved by maximizing the number of <em>other</em> characters for whom
 <a
@@ -2303,7 +2306,7 @@ href="#var:relationship"><code>relationship</code></a><code>(character, other) <
 class="math inline">≠</span><code> </code><a
 href="#const:Enemy"><code>Enemy</code></a> or <a
 href="#var:health"><code>health</code></a><code>(other) </code><span
-class="math inline">≠</span><code> </code><a
+class="math inline">=</span><code> </code><a
 href="#const:Dead"><code>Dead</code></a>.</p></li>
 <li><p>Opposed to <a
 href="#goal:friendly"><code>friendly</code></a>.</p></li>
@@ -3253,10 +3256,11 @@ href="#var:visible"><code>visible</code></a>.</p></li>
 <li><p>First public release of this document.</p></li>
 </ul>
 <h1 id="license">License</h1>
-<p>The first version of this document, which defines MicroTales, was
-written by Stephen G. Ware and Molly Siler at the University of Kentucky
-in September, 2025. The University of Kentucky holds the copyright to
-this document. It is released under a <a
+<p>The first version of this document was written by Stephen G. Ware and
+Molly Siler of the <a href="http://cs.uky.edu/~sgware">Narrative
+Intelligence Lab</a> at the <a href="http://cs.uky.edu">University of
+Kentucky</a> in September, 2025. The University of Kentucky holds the
+copyright to this document. It is released under a <a
 href="https://creativecommons.org/licenses/by/4.0/deed.en">Creative
 Commons Attribution 4.0 International</a> license (CC BY 4.0). In short,
 this means anyone is free to distribute it and to adapt it, even for

@@ -501,7 +501,7 @@ The only character type that is always available is the \refchar{peasant}, which
 	\item Only available when \refmech{Commerce} is enabled.
 	\item Starts at the first \refloc{market} or \refloc{crossroads} defined in the problem by default.
 	\item Recommended to start with at least one item of any type except a \refconst{Coin}.
-	\item Required not to be \refgoal{friendly}.
+	\item Required not to be \refgoal{kind}.
 	\item Recommended to be \refgoal{greedy}.
 	\item Cannot \refact{sell} items at the \refloc{market}.
 \end{itemize}}
@@ -612,6 +612,7 @@ Some variables, like the \refvar{relationship} between each character, are count
 \begin{itemize}
   \item The \param{character}'s current position on the map.
 	\item The value \None means the character is nowhere on the map.
+	\item \hyperref[sec:characters]{Character types} specify default locations. When the specified locations are not available, the default value is the first location defined in the problem.
 	\item The \refgoal{homesick} goal is satisfied by a character being at a certain location.
 	\item Many actions require that a character be at a certain location or in the same location as another character they are interacting with.
 	\item Character locations can change via the \refact{arrest}, \refact{teleport}, and \refact{walk} actions.
@@ -949,7 +950,7 @@ MicroTales tries to avoid imposing any particular model of what makes a good sto
 
 \defgoal{vengeful}{\param{character}}{
 \begin{itemize}
-	\item Achieved by maximizing the number of other characters who \param{character} does not regard as an \refconst{Enemy} or whose \refvar{health} is not \refconst{Dead}. In other words, this goal is achieved by maximizing the number of \param{other} characters for whom \element{\refvar{relationship}(character, other) $\neq$ \refconst{Enemy}} or \element{\refvar{health}(other) $\neq$ \refconst{Dead}}.
+	\item Achieved by maximizing the number of other characters who \param{character} does not regard as an \refconst{Enemy} or whose \refvar{health} is \refconst{Dead}. In other words, this goal is achieved by maximizing the number of \param{other} characters for whom \element{\refvar{relationship}(character, other) $\neq$ \refconst{Enemy}} or \element{\refvar{health}(other) $=$ \refconst{Dead}}.
 	\item Opposed to \refgoal{friendly}.
 	\item This goal improves each time \param{character} stops regarding another non-\refconst{Dead} character as an \refconst{Enemy} or someone that \param{character} regards as an \refconst{Enemy} becomes \refconst{Dead}. Relationships can improve via the \refact{charm}, \refact{give}, \refact{heal}, or \refact{release} actions. Characters can die via the \refact{attack}, \refact{curse}, and \refact{die} actions.
 	\item This goal worsens each time \param{character} regards another non-\refconst{Dead} character as an \refconst{Enemy} or someone that \param{character} regards as an \refconst{Enemy} stop being \refconst{Dead}. Relationships can degrade via the \refact{arrest}, \refact{attack}, \refact{banish}, \refact{curse}, and \refact{take} actions. Characters can stop being \refconst{Dead} via the \refact{raise} and \refact{rise} actions.
