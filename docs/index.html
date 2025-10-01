@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Stephen G. Ware and Molly Siler" />
-  <meta name="dcterms.date" content="2025-09-17" />
+  <meta name="dcterms.date" content="2025-09-24" />
   <title>MicroTales: Story Planning Benchmark Problems that Scale along Several Dimensions Version 1.0</title>
   <style>
     html {
@@ -196,7 +196,7 @@
 Scale along Several Dimensions<br />
 <span>Version 1.0</span></h1>
 <p class="author">Stephen G. Ware and Molly Siler</p>
-<p class="date">2025-09-17</p>
+<p class="date">2025-09-24</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <h2 id="toc-title">Contents</h2>
@@ -450,10 +450,10 @@ mechanics:
 - Theft # Adds bandit, Coin, and Sword; allows steal action
 - Violence # Adds knight and Sword; allows vengeful; attack action
 locations:
-Sherwood : forest # Sherwood forest
-Nottingham : castle # Nottingham Castle
-Jail : jail # The Jail
-Abbey : chapel # Fountains Abbey
+- Sherwood : forest # Sherwood forest
+- Nottingham : castle # Nottingham Castle
+- Jail : jail # The Jail
+- Abbey : chapel # Fountains Abbey
 paths: # Sherwood Forest connects all locations
 - [Sherwood, Nottingham]
 - [Sherwood, Jail]
@@ -464,7 +464,7 @@ John : noble # Prince John is a noble.
 Sheriff : knight # The Sheriff of Nottingham is a knight.
 Marian : noble # Maid Marian is a noble.
 initial: # Only need to list values if they are not defaults
-- [location, Robin, Forest] # Robin starts in Sherwood Forest.
+- [location, Robin, Sherwood] # Robin starts in Sherwood Forest.
 - [right, John, Crown] # Prince John starts with a Crown.
 goals:
 - [Robin, greedy, Robin] # Robin wants coins.
@@ -928,8 +928,10 @@ duplicate locations when possible simply for the sake of variety.</p>
 <p>Figure <a href="#fig:problemex" data-reference-type="ref"
 data-reference="fig:problemex">1</a> shows an example list of locations.
 In YAML, the list of locations is the key <code>locations</code>
-followed by a mapping of string names to string types, where the type is
-one of those defined below. The list of locations is not optional,
+followed by a sequence of one-element maps that each associate one
+unique string name to a string type, where the type is one of those
+defined below. A sequence of maps is necessary because the order
+locations are defined in matters. The list of locations is not optional,
 because a problem must define at least one location.</p>
 <p>Four location types are always available: the <a
 href="#loc:cave"><code>cave</code></a>, <a
@@ -1138,8 +1140,8 @@ data-label="char:bandit"></span></p>
 <li><p>Only available when <a
 href="#mech:Stealth"><code>Stealth</code></a> or <a
 href="#mech:Theft"><code>Theft</code></a> is enabled.</p></li>
-<li><p>Starts at a the first <a href="#loc:camp"><code>camp</code></a>
-or <a href="#loc:crossroads"><code>crossroads</code></a> defined in the
+<li><p>Starts at the first <a href="#loc:camp"><code>camp</code></a> or
+<a href="#loc:crossroads"><code>crossroads</code></a> defined in the
 problem by default.</p></li>
 <li><p>Required not to be <a
 href="#goal:lawful"><code>lawful</code></a>.</p></li>
@@ -2485,10 +2487,10 @@ href="#var:location"><code>location</code></a>.</p></li>
 <p><strong>Effects:</strong></p>
 <ul>
 <li><p>If the <em>target</em> was <a
-href="#const:Healthy"><code>Healthy</code></a>, they are not <a
+href="#const:Healthy"><code>Healthy</code></a>, they are now <a
 href="#const:Hurt"><code>Hurt</code></a>.</p></li>
 <li><p>If the <em>target</em> was <a
-href="#const:Hurt"><code>Hurt</code></a>, they are not <a
+href="#const:Hurt"><code>Hurt</code></a>, they are now <a
 href="#const:Dead"><code>Dead</code></a>.</p></li>
 <li><p>If the <em>target</em> is not a <a
 href="#var:criminal"><code>criminal</code></a>, the <em>character</em>
@@ -2632,9 +2634,9 @@ href="#mech:Sickness"><code>Sickness</code></a> or <a
 href="#mech:Undead"><code>Undead</code></a> is enabled.</p></li>
 <li><p>The <em>character</em> and <em>target</em> character may be the
 same.</p></li>
-<li><p>The <em>character</em> is alive.</p></li>
-<li><p>The <em>character</em> is holding a <a
-href="#const:CursePotion"><code>CursePotion</code></a> or is a <a
+<li><p>The <em>character</em> is alive and holding a <a
+href="#const:CursePotion"><code>CursePotion</code></a>, or the
+<em>character</em> is a <a
 href="#const:Ghost"><code>Ghost</code></a>.</p></li>
 <li><p>The <em>target</em> is alive.</p></li>
 <li><p>The <em>target</em> is <a

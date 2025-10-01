@@ -89,10 +89,10 @@ mechanics:
 - Theft    # Adds bandit, Coin, and Sword; allows steal action
 - Violence # Adds knight and Sword; allows vengeful; attack action
 locations:
-  Sherwood : forest   # Sherwood forest
-  Nottingham : castle # Nottingham Castle
-  Jail : jail         # The Jail
-  Abbey : chapel      # Fountains Abbey
+- Sherwood : forest   # Sherwood forest
+- Nottingham : castle # Nottingham Castle
+- Jail : jail         # The Jail
+- Abbey : chapel      # Fountains Abbey
 paths: # Sherwood Forest connects all locations
 - [Sherwood, Nottingham]
 - [Sherwood, Jail]
@@ -103,8 +103,8 @@ characters:
   Sheriff : knight # The Sheriff of Nottingham is a knight.
   Marian : noble   # Maid Marian is a noble.
 initial: # Only need to list values if they are not defaults
-- [location, Robin, Forest] # Robin starts in Sherwood Forest.
-- [right, John, Crown]      # Prince John starts with a Crown.
+- [location, Robin, Sherwood] # Robin starts in Sherwood Forest.
+- [right, John, Crown]        # Prince John starts with a Crown.
 goals:
 - [Robin, greedy, Robin]           # Robin wants coins.
 - [Robin, smitten, Robin, Marian]  # Robin wants to marry Marian.
@@ -353,7 +353,7 @@ Not all of the elements enabled by a mechanic need to be used in the problem, th
 
 MicroTales problems take place on a map made of one or more connected locations. A location has a unique name and a type. The type determines what special actions are available in that location. There can be more than one location of the same type on a map as long as they have different names. For example, \element{Sherwood} and \element{Mirkwood} might both be locations of type \refloc{forest}. We recommend avoiding duplicate locations when possible simply for the sake of variety.
 
-Figure \ref{fig:problemex} shows an example list of locations. In YAML, the list of locations is the key \element{locations} followed by a mapping of string names to string types, where the type is one of those defined below. The list of locations is not optional, because a problem must define at least one location.
+Figure \ref{fig:problemex} shows an example list of locations. In YAML, the list of locations is the key \element{locations} followed by a sequence of one-element maps that each associate one unique string name to a string type, where the type is one of those defined below. A sequence of maps is necessary because the order locations are defined in matters. The list of locations is not optional, because a problem must define at least one location.
 
 Four location types are always available: the \refloc{cave}, \refloc{crossroads}, \refloc{forest}, and \refloc{village}. These locations are similar in function---\hyperref[sec:characters]{characters} can \refact{drop} or \refact{pickup} an \refvar{item}. The \refloc{cave} and \refloc{forest} have default \refvar{item}s waiting to be picked up when some mechanics are enabled.
 
@@ -468,7 +468,7 @@ The only character type that is always available is the \refchar{peasant}, which
 \defchar{bandit}{
 \begin{itemize}
 	\item Only available when \refmech{Stealth} or \refmech{Theft} is enabled.
-	\item Starts at a the first \refloc{camp} or \refloc{crossroads} defined in the problem by default.
+	\item Starts at the first \refloc{camp} or \refloc{crossroads} defined in the problem by default.
 	\item Required not to be \refgoal{lawful}.
 	\item Recommended to be \refgoal{greedy}.
 	\item Can \refact{hide} at any location, not just a \refloc{camp}.
@@ -1014,8 +1014,8 @@ The only actions that always available in every problem are basic movement, the 
 	\item The \param{character} and \param{target} are at the same \refvar{location}.
 \end{pre}
 \begin{eff}
-  \item If the \param{target} was \refconst{Healthy}, they are not \refconst{Hurt}.
-	\item If the \param{target} was \refconst{Hurt}, they are not \refconst{Dead}.
+  \item If the \param{target} was \refconst{Healthy}, they are now \refconst{Hurt}.
+	\item If the \param{target} was \refconst{Hurt}, they are now \refconst{Dead}.
 	\item If the \param{target} is not a \refvar{criminal}, the \param{character} is now a \refvar{criminal}.
 	\item If the \refvar{relationship} between \param{target} and \param{character} was \refconst{Friend}, it is now \None.
 	\item If the \refvar{relationship} between \param{target} and \param{character} was \None, it is now \refconst{Enemy}.
@@ -1086,8 +1086,7 @@ The only actions that always available in every problem are basic movement, the 
 \begin{pre}
   \item Only available when \refmech{Sickness} or \refmech{Undead} is enabled.
 	\item The \param{character} and \param{target} character may be the same.
-	\item The \param{character} is alive.
-	\item The \param{character} is holding a \refconst{CursePotion} or is a \refconst{Ghost}.
+	\item The \param{character} is alive and holding a \refconst{CursePotion}, or the \param{character} is a \refconst{Ghost}.
 	\item The \param{target} is alive.
 	\item The \param{target} is \refvar{visible}.
 	\item The \param{character} and \param{target} are at the same \refvar{location}.
