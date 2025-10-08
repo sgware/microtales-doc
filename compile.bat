@@ -1,10 +1,10 @@
 del microtales.pdf
-del docs/index.html
+del index.html
 pdflatex microtales.tex
 bibtex microtales
 pdflatex microtales.tex
 pdflatex microtales.tex
-pandoc microtales.tex -f latex -t html -s -o docs/index.html ^
+pandoc microtales.tex -f latex -t html -s -o index.html ^
 --toc -V toc-title=Contents ^
 --bibliography bibliography.bib --citeproc -M reference-section-title=Bibliography ^
 --lua-filter codeenv.lua
