@@ -47,7 +47,7 @@ This document describes MicroTales, a single storytelling domain based on very s
 	\item Actions, which have preconditions that limit when they can occur and effects that define how they change the world state.
 \end{itemize}
 
-\noindent We define each of these parts in detail. MicroTales problems are highly modular, with different elements becoming available only when certain \hyperref[sec:mechanics]{mechanics} are enabled. For example, the \refmech{Undead} mechanic contains characters, items, locations, and actions related to ghosts. When the \refmech{Undead} mechanic is enabled, these elements can be used in a problem.
+\noindent We define each of these parts in detail. MicroTales problems are highly modular, with different elements becoming available only when certain \hyperref[sec:extensions]{extensions} are enabled. For example, the \refmech{Undead} extension contains characters, items, locations, and actions related to ghosts. When the \refmech{Undead} extension is enabled, these elements can be used in a problem.
 
 Our definitions do not assume any particular implementation. We want it to be possible to implement MicroTales in everything from the Planning Domain Definition Language~\cite{ghallab1998pddl}, used to define classical planning problems, to an AI Gymnasium environment~\cite{towers2024gymnasium}, used to define a Markov Decision Process for reinforcement learning, to even non-digital implementations, like a board game.
 
@@ -82,7 +82,7 @@ Our definitions do not assume any particular implementation. We want it to be po
 \begin{code}
 name: "Robin Hood"
 version: 1.0
-mechanics:
+extensions:
 - Crime    # Adds jail; allows lawful; allows arrest and release actions
 - Marriage # Adds chapel; allows smitten; allows marry action
 - Monarchy # Adds castle and Crown; allows ambitious; enthrone action
@@ -186,7 +186,7 @@ A MicroTales problem is defined by several explicit elements which imply the inc
 \begin{itemize}
 	\item An optional name or title.
 	\item An optional version number, to check compatibility. This is the version of MicroTales, not of the problem itself.
-	\item A list of \hyperref[sec:mechanics]{mechanics}, which define what elements are available to use.
+	\item A list of \hyperref[sec:extensions]{extensions}, which define what elements are available to use.
 	\item A list of \hyperref[sec:locations]{locations}, each defined by a name and type.
 	\item A list of \hyperref[sec:locations]{paths} that connect locations.
 	\item A list of \hyperref[sec:characters]{characters}, each defined by a name and type.
@@ -196,28 +196,28 @@ A MicroTales problem is defined by several explicit elements which imply the inc
 
 \noindent Figure \ref{fig:problemex} shows an example problem in YAML format.
 
-Many elements of a problem are not explicitly listed but are implied by what is explicitly listed. For example, each problem defines \hyperref[sec:variables]{variables}, and the current state of the problem is an assignment of a value to each of its variables. Variables are not explicitly listed because they are implied by the mechanics, locations, and characters. Similarly, actions are not explicitly listed because which actions are available is implied by the other elements.
+Many elements of a problem are not explicitly listed but are implied by what is explicitly listed. For example, each problem defines \hyperref[sec:variables]{variables}, and the current state of the problem is an assignment of a value to each of its variables. Variables are not explicitly listed because they are implied by the extensions, locations, and characters. Similarly, actions are not explicitly listed because which actions are available is implied by the other elements.
 
-A problem's elements cannot be created or destroyed. The only thing about a problem that changes over time is the values assigned to its \hyperref[sec:variables]{variables}. New locations cannot be added to the map, nor can existing locations be removed. New characters cannot be created or removed (though they can be killed when the relevant \hyperref[sec:mechanics]{mechanics} are enabled). The items a character is carrying are not first class elements of a problem, so they do not need to be explicitly defined, and they can be created and destroyed (\hyperref[sec:constants]{see the section on Constants for how items work}).
+A problem's elements cannot be created or destroyed. The only thing about a problem that changes over time is the values assigned to its \hyperref[sec:variables]{variables}. New locations cannot be added to the map, nor can existing locations be removed. New characters cannot be created or removed (though they can be killed when the relevant \hyperref[sec:extensions]{extensions} are enabled). The items a character is carrying are not first class elements of a problem, so they do not need to be explicitly defined, and they can be created and destroyed (\hyperref[sec:constants]{see the section on Constants for how items work}).
 
 The following subsections define MicroTales elements in detail. Rules which must be followed are {\em required}. When something is {\em recommended}, it means that a problem generator should try to follow those rules when it can, but it may choose to ignore those rules in service of some other design goal. When a definition says something is a {\em default}, it means that a problem assumes the rule will be followed. If a default is not followed, the problem must explicitly state some other value. For example, a \refchar{noble} character starts with a \refconst{Coin} in their \refvar{left} hand by default. The problem does not need to list this under its initial facts because it will be assumed. If the noble should not start with a coin, the problem should explicitly list their \refvar{left} hand as \None.
 
 \paragraph{Style and Capitalization}
-Throughout this document, we capitalize specific, individual objects. This includes universal constants like \element{True}, \element{False}, and \None, the names of all \hyperref[sec:mechanics]{mechanics}, the names of all \hyperref[sec:constants]{constants}, and the names given to individual objects defined in example problems, like the character name \element{Robin}. We use lower case for types, which includes all \hyperref[sec:locations]{location types}, \hyperref[sec:characters]{character types}, \hyperref[sec:variables]{variable names}, \hyperref[sec:goals]{goal names}, and \hyperref[sec:actions]{action names}. For example, \element{Robin} is the name of a specific character, so we capitalize his name, but his character type, \refchar{bandit}, is a type and is written in lower case. The variable \element{health(Robin)} has a lower case name because \refvar{health} is a type of variables, but the value \refconst{Healthy}, which can be assigned to that variable, is a single individual constant and is capitalized.
+Throughout this document, we capitalize specific, individual objects. This includes universal constants like \element{True}, \element{False}, and \None, the names of all \hyperref[sec:extensions]{extensions}, the names of all \hyperref[sec:constants]{constants}, and the names given to individual objects defined in example problems, like the character name \element{Robin}. We use lower case for types, which includes all \hyperref[sec:locations]{location types}, \hyperref[sec:characters]{character types}, \hyperref[sec:variables]{variable names}, \hyperref[sec:goals]{goal names}, and \hyperref[sec:actions]{action names}. For example, \element{Robin} is the name of a specific character, so we capitalize his name, but his character type, \refchar{bandit}, is a type and is written in lower case. The variable \element{health(Robin)} has a lower case name because \refvar{health} is a type of variables, but the value \refconst{Healthy}, which can be assigned to that variable, is a single individual constant and is capitalized.
 
 \newpage
 
-\subsection{Mechanics} \label{sec:mechanics}
+\subsection{Extensions} \label{sec:extensions}
 
-A mechanic is a group of related problem elements that become available when a mechanic is included in a problem. Mechanics are designed to allow additional types of actions in a problem, but doing so means enabling the locations, characters, and goals that would make those actions possible and relevant.
+An extension is a group of related problem elements that become available when an extension is included in a problem. Extensions are designed to allow additional types of actions in a problem, but doing so means enabling the locations, characters, and goals that would make those actions possible and relevant.
 
-Figure \ref{fig:problemex} shows an example list of mechanics. In YAML, the list of mechanics is simply the key \element{mechanics} followed by a sequence of strings. The list of mechanics is optional and can be omitted, but problems with no mechanics are likely to be uninteresting.
+Figure \ref{fig:problemex} shows an example list of extensions. In YAML, the list of extensions is simply the key \element{extensions} followed by a sequence of strings. The list of extensions is optional and can be omitted, but problems with no extensions are likely to be uninteresting.
 
-Some mechanics require that other mechanics are also enabled. For example, the \refmech{Undead} mechanic requires some way for characters to die, which is enabled by both the \refmech{Sickness} and \refmech{Violence} mechanics. One of these two must be enabled in order to enable \refmech{Undead}. A problem should explicitly list all mechanics that it uses, even those required by other mechanics. For example, a problem that includes \refmech{Undead} should also explicitly list \refmech{Sickness} or \refmech{Violence} or both.
+Some extensions require that other extensions are also enabled. For example, the \refmech{Undead} extension requires some way for characters to die, which is enabled by both the \refmech{Sickness} and \refmech{Violence} extensions. One of these two must be enabled in order to enable \refmech{Undead}. A problem should explicitly list all extensions that it uses, even those required by other extensions. For example, a problem that includes \refmech{Undead} should also explicitly list \refmech{Sickness} or \refmech{Violence} or both.
 
-Several problem elements can be enabled by more than one mechanic. For example, several mechanics enable potions of some sort. All of these mechanics enable the \refchar{sorcerer} character type, whose special actions revolve around using potions.
+Several problem elements can be enabled by more than one extension. For example, several extensions enable potions of some sort. All of these extensions enable the \refchar{sorcerer} character type, whose special actions revolve around using potions.
 
-Not all of the elements enabled by a mechanic need to be used in the problem, though at least one should be used. We recommend this rule of thumb: if a mechanic could be removed without modifying the problem at all, then it is not really enabled and should not be listed as part of the problem.
+Not all of the elements enabled by an extension need to be used in the problem, though at least one should be used. We recommend this rule of thumb: if an extension could be removed without modifying the problem at all, then it is not really enabled and should not be listed as part of the problem.
 
 \defmech{Alchemy}{
 \begin{itemize}
@@ -355,7 +355,7 @@ MicroTales problems take place on a map made of one or more connected locations.
 
 Figure \ref{fig:problemex} shows an example list of locations. In YAML, the list of locations is the key \element{locations} followed by a sequence of one-element maps that each associate one unique string name to a string type, where the type is one of those defined below. A sequence of maps is necessary because the order locations are defined in matters. The list of locations is not optional, because a problem must define at least one location.
 
-Four location types are always available: the \refloc{cave}, \refloc{crossroads}, \refloc{forest}, and \refloc{village}. These locations are similar in function---\hyperref[sec:characters]{characters} can \refact{drop} or \refact{pickup} an \refvar{item}. The \refloc{cave} and \refloc{forest} have default \refvar{item}s waiting to be picked up when some mechanics are enabled.
+Four location types are always available: the \refloc{cave}, \refloc{crossroads}, \refloc{forest}, and \refloc{village}. These locations are similar in function---\hyperref[sec:characters]{characters} can \refact{drop} or \refact{pickup} an \refvar{item}. The \refloc{cave} and \refloc{forest} have default \refvar{item}s waiting to be picked up when some extensions are enabled.
 
 The order that locations are defined in affects the default starting locations of \hyperref[sec:characters]{characters}. For example, the \refchar{bandit} character type's default starting location is the first \refloc{camp} or \refloc{crossroads} location that is defined in the problem. If a problem contains both a \refloc{camp} and a \refloc{crossroads}, the \refchar{bandit} will start in whichever one is defined first in the list of locations. Similarly, if the problem has more than one location of type \refloc{camp}, the first one will be used. If there are no locations that a character prefers to start in, they default to starting in the first location in the list. These defaults do not apply if a problem explicitly states a character's starting location.
 
@@ -463,7 +463,7 @@ Figure \ref{fig:problemex} shows an example list of characters. In YAML, the lis
 
 Character types define what special actions a character can take. They prohibit some character goals and recommend others. Many character types also define a default starting location and starting items. These defaults do not apply if a problem explicitly states some other starting location or starting items.
 
-The only character type that is always available is the \refchar{peasant}, which has no special qualities. All other character types are enabled by \hyperref[sec:mechanics]{mechanics}.
+The only character type that is always available is the \refchar{peasant}, which has no special qualities. All other character types are enabled by \hyperref[sec:extensions]{extensions}.
 
 \defchar{bandit}{
 \begin{itemize}
@@ -535,7 +535,7 @@ The only character type that is always available is the \refchar{peasant}, which
 
 Variables are features of a problem that are assigned one of several possible values. All of a problem's variables with their assigned values define a problem state. Different \hyperref[sec:actions]{actions} are possible depending on the current state, and \hyperref[sec:actions]{actions} change the values assigned to variables. Actions are the only way to change variable values.
 
-A problem does not explicitly define its variables; they are implied by the other elements in the problem. For example, when the \refmech{Violence} mechanic is enabled the problem must have a \refvar{health} variable for every \hyperref[sec:characters]{character}.
+A problem does not explicitly define its variables; they are implied by the other elements in the problem. For example, when the \refmech{Violence} extension is enabled the problem must have a \refvar{health} variable for every \hyperref[sec:characters]{character}.
 
 A variable is identified by a name followed by zero to many arguments. In the example above, \element{health} is the name of the variable, and it has one argument, the name of the character. If a problem defines two characters named \element{Robin} and \element{Marian}, then it will have two \refvar{health} variables, one for each of them. In text, we would write those variables as \element{health(Robin)} and \element{health(Marian)}, though in YAML we use a different style, as discussed below.
 
@@ -685,7 +685,7 @@ Some variables, like the \refvar{relationship} between each character, are count
 
 \subsection{Constants} \label{sec:constants}
 
-Constants are special values that can be assigned to some \hyperref[sec:variables]{variables}. Constants are not explicitly defined; they are implied by which \hyperref[sec:mechanics]{mechanics} are enabled. For example, the \refconst{Ghost} constant is one possible value for a \refvar{health} variable, and it represents a character who has been raised from the dead. However, if the \refmech{Undead} mechanic is not enabled, this constant is not available, even if the other constants that can be assigned to \refvar{health} variables are.
+Constants are special values that can be assigned to some \hyperref[sec:variables]{variables}. Constants are not explicitly defined; they are implied by which \hyperref[sec:extensions]{extensions} are enabled. For example, the \refconst{Ghost} constant is one possible value for a \refvar{health} variable, and it represents a character who has been raised from the dead. However, if the \refmech{Undead} extension is not enabled, this constant is not available, even if the other constants that can be assigned to \refvar{health} variables are.
 
 One use of constants is the items that characters carry and use in the story. MicroTales elements cannot be created or removed, but items are not first class elements. Each character has a \refvar{left} and \refvar{right} hand variable, and the possible values that can be assigned are the item constants or \None to represent holding nothing. This means each character can hold up to two items, one in each hand. Consider the \refact{sell} action, where a character trades an item for a \refconst{Coin}. The action's precondition requires that the character have the item they are selling in either their \refvar{left} or \refvar{right} hand. The effects of the action replace that hand's value with a \refconst{Coin} constant, effectively destroying the original item and creating a new \refconst{Coin} item.
 
@@ -962,7 +962,7 @@ MicroTales tries to avoid imposing any particular model of what makes a good sto
 
 Actions are events that happen in a story. An action has preconditions that limit when it can happen and effects that modify the world state.
 
-A problem does not explicitly define actions; they are implied by the other elements in the problem. Any time an action is enabled by a \hyperref[sec:mechanics]{mechanic} it is available in a story. For example, the \refact{enthrone} action is always available in every story where \refmech{Monarchy} is enabled, though it can only happen when a character is in a \refloc{castle} and holding a \refconst{Crown}.
+A problem does not explicitly define actions; they are implied by the other elements in the problem. Any time an action is enabled by a \hyperref[sec:extensions]{extension} it is available in a story. For example, the \refact{enthrone} action is always available in every story where \refmech{Monarchy} is enabled, though it can only happen when a character is in a \refloc{castle} and holding a \refconst{Crown}.
 
 Like \hyperref[sec:variables]{variables} and \hyperref[sec:goals]{goals}, actions are parameterized. The list of parameters are given in parentheses after the name.
 
@@ -970,7 +970,7 @@ An action's preconditions are meant as minimal restrictions for an action to see
 
 Some actions have an active version that is done by a character and a passive version that simply happens. For example, when a character is \refconst{Hurt}, they can be made \refconst{Healthy} again via by the \refact{heal} action, which is actively done by a character, but they can also simply get better via the \refact{recover} action. Actions not taken by characters provide flexibility in solving problems, but may be perceived as a {\em deus ex machina}. 
 
-For brevity, we list preconditions and effects on all variables, even if they are not used in a problem. For example, many actions require that a character not be \refconst{Dead}, but this only applies if \refvar{health} variables exist. If the \refmech{Sickness} or \refmech{Violence} \hyperref[sec:mechanics]{mechanics} are not enabled, \refvar{health} variables do not exist, so preconditions and effects on those variables are ignored.
+For brevity, we list preconditions and effects on all variables, even if they are not used in a problem. For example, many actions require that a character not be \refconst{Dead}, but this only applies if \refvar{health} variables exist. If the \refmech{Sickness} or \refmech{Violence} \hyperref[sec:extensions]{extensions} are not enabled, \refvar{health} variables do not exist, so preconditions and effects on those variables are ignored.
 
 We use a few common shorthand phrases in action preconditions:
 \begin{itemize}

@@ -5,9 +5,12 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Stephen G. Ware and Molly Siler" />
-  <meta name="dcterms.date" content="2025-10-08" />
+  <meta name="dcterms.date" content="2025-10-12" />
   <title>MicroTales: Story Planning Benchmark Problems that Scale along Several Dimensions Version 1.0</title>
   <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
     html {
       color: #1a1a1a;
       background-color: #fdfdfd;
@@ -172,7 +175,6 @@
     div.csl-bib-body { }
     div.csl-entry {
       clear: both;
-      margin-bottom: 0em;
     }
     .hanging-indent div.csl-entry {
       margin-left:2em;
@@ -196,7 +198,7 @@
 Scale along Several Dimensions<br />
 <span>Version 1.0</span></h1>
 <p class="author">Stephen G. Ware and Molly Siler</p>
-<p class="date">2025-10-08</p>
+<p class="date">2025-10-12</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <h2 id="toc-title">Contents</h2>
@@ -207,7 +209,8 @@ Scale along Several Dimensions<br />
 Problem</a></li>
 <li><a href="#definitions" id="toc-definitions">Definitions</a>
 <ul>
-<li><a href="#sec:mechanics" id="toc-sec:mechanics">Mechanics</a></li>
+<li><a href="#sec:extensions"
+id="toc-sec:extensions">Extensions</a></li>
 <li><a href="#sec:locations" id="toc-sec:locations">Locations and
 Paths</a></li>
 <li><a href="#sec:characters"
@@ -270,11 +273,11 @@ and effects that define how they change the world state.</p></li>
 </ul>
 <p>We define each of these parts in detail. MicroTales problems are
 highly modular, with different elements becoming available only when
-certain <a href="#sec:mechanics">mechanics</a> are enabled. For example,
-the <a href="#mech:Undead"><code>Undead</code></a> mechanic contains
-characters, items, locations, and actions related to ghosts. When the <a
-href="#mech:Undead"><code>Undead</code></a> mechanic is enabled, these
-elements can be used in a problem.</p>
+certain <a href="#sec:extensions">extensions</a> are enabled. For
+example, the <a href="#mech:Undead"><code>Undead</code></a> extension
+contains characters, items, locations, and actions related to ghosts.
+When the <a href="#mech:Undead"><code>Undead</code></a> extension is
+enabled, these elements can be used in a problem.</p>
 <p>Our definitions do not assume any particular implementation. We want
 it to be possible to implement MicroTales in everything from the
 Planning Domain Definition Language <span class="citation"
@@ -440,10 +443,10 @@ MicroTales problems is not likely to result in a set of interesting
 problems. Problem generators will need to apply further criteria and
 quality checks to ensure problems are interesting. Generating or
 curating interesting problem sets by hand is also encouraged.</p>
-<figure id="fig:problemex">
+<figure id="fig:problemex" data-latex-placement="!ht">
 <pre><code>name: &quot;Robin Hood&quot;
 version: 1.0
-mechanics:
+extensions:
 - Crime # Adds jail; allows lawful; allows arrest and release actions
 - Marriage # Adds chapel; allows smitten; allows marry action
 - Monarchy # Adds castle and Crown; allows ambitious; enthrone action
@@ -592,7 +595,7 @@ problem are:</p>
 <li><p>An optional name or title.</p></li>
 <li><p>An optional version number, to check compatibility. This is the
 version of MicroTales, not of the problem itself.</p></li>
-<li><p>A list of <a href="#sec:mechanics">mechanics</a>, which define
+<li><p>A list of <a href="#sec:extensions">extensions</a>, which define
 what elements are available to use.</p></li>
 <li><p>A list of <a href="#sec:locations">locations</a>, each defined by
 a name and type.</p></li>
@@ -612,7 +615,7 @@ format.</p>
 by what is explicitly listed. For example, each problem defines <a
 href="#sec:variables">variables</a>, and the current state of the
 problem is an assignment of a value to each of its variables. Variables
-are not explicitly listed because they are implied by the mechanics,
+are not explicitly listed because they are implied by the extensions,
 locations, and characters. Similarly, actions are not explicitly listed
 because which actions are available is implied by the other
 elements.</p>
@@ -621,11 +624,11 @@ about a problem that changes over time is the values assigned to its <a
 href="#sec:variables">variables</a>. New locations cannot be added to
 the map, nor can existing locations be removed. New characters cannot be
 created or removed (though they can be killed when the relevant <a
-href="#sec:mechanics">mechanics</a> are enabled). The items a character
-is carrying are not first class elements of a problem, so they do not
-need to be explicitly defined, and they can be created and destroyed (<a
-href="#sec:constants">see the section on Constants for how items
-work</a>).</p>
+href="#sec:extensions">extensions</a> are enabled). The items a
+character is carrying are not first class elements of a problem, so they
+do not need to be explicitly defined, and they can be created and
+destroyed (<a href="#sec:constants">see the section on Constants for how
+items work</a>).</p>
 <p>The following subsections define MicroTales elements in detail. Rules
 which must be followed are <span><em>required</em></span>. When
 something is <span><em>recommended</em></span>, it means that a problem
@@ -645,7 +648,7 @@ explicitly list their <a href="#var:left"><code>left</code></a> hand as
 <p>Throughout this document, we capitalize specific, individual objects.
 This includes universal constants like <code>True</code>,
 <code>False</code>, and <code>Null</code>, the names of all <a
-href="#sec:mechanics">mechanics</a>, the names of all <a
+href="#sec:extensions">extensions</a>, the names of all <a
 href="#sec:constants">constants</a>, and the names given to individual
 objects defined in example problems, like the character name
 <code>Robin</code>. We use lower case for types, which includes all <a
@@ -661,39 +664,40 @@ name because <a href="#var:health"><code>health</code></a> is a type of
 variables, but the value <a
 href="#const:Healthy"><code>Healthy</code></a>, which can be assigned to
 that variable, is a single individual constant and is capitalized.</p>
-<h2 id="sec:mechanics">Mechanics</h2>
-<p>A mechanic is a group of related problem elements that become
-available when a mechanic is included in a problem. Mechanics are
+<h2 id="sec:extensions">Extensions</h2>
+<p>An extension is a group of related problem elements that become
+available when an extension is included in a problem. Extensions are
 designed to allow additional types of actions in a problem, but doing so
 means enabling the locations, characters, and goals that would make
 those actions possible and relevant.</p>
 <p>Figure <a href="#fig:problemex" data-reference-type="ref"
-data-reference="fig:problemex">1</a> shows an example list of mechanics.
-In YAML, the list of mechanics is simply the key <code>mechanics</code>
-followed by a sequence of strings. The list of mechanics is optional and
-can be omitted, but problems with no mechanics are likely to be
-uninteresting.</p>
-<p>Some mechanics require that other mechanics are also enabled. For
-example, the <a href="#mech:Undead"><code>Undead</code></a> mechanic
+data-reference="fig:problemex">1</a> shows an example list of
+extensions. In YAML, the list of extensions is simply the key
+<code>extensions</code> followed by a sequence of strings. The list of
+extensions is optional and can be omitted, but problems with no
+extensions are likely to be uninteresting.</p>
+<p>Some extensions require that other extensions are also enabled. For
+example, the <a href="#mech:Undead"><code>Undead</code></a> extension
 requires some way for characters to die, which is enabled by both the <a
 href="#mech:Sickness"><code>Sickness</code></a> and <a
-href="#mech:Violence"><code>Violence</code></a> mechanics. One of these
+href="#mech:Violence"><code>Violence</code></a> extensions. One of these
 two must be enabled in order to enable <a
 href="#mech:Undead"><code>Undead</code></a>. A problem should explicitly
-list all mechanics that it uses, even those required by other mechanics.
-For example, a problem that includes <a
+list all extensions that it uses, even those required by other
+extensions. For example, a problem that includes <a
 href="#mech:Undead"><code>Undead</code></a> should also explicitly list
 <a href="#mech:Sickness"><code>Sickness</code></a> or <a
 href="#mech:Violence"><code>Violence</code></a> or both.</p>
-<p>Several problem elements can be enabled by more than one mechanic.
-For example, several mechanics enable potions of some sort. All of these
-mechanics enable the <a href="#char:sorcerer"><code>sorcerer</code></a>
-character type, whose special actions revolve around using potions.</p>
-<p>Not all of the elements enabled by a mechanic need to be used in the
-problem, though at least one should be used. We recommend this rule of
-thumb: if a mechanic could be removed without modifying the problem at
-all, then it is not really enabled and should not be listed as part of
-the problem.</p>
+<p>Several problem elements can be enabled by more than one extension.
+For example, several extensions enable potions of some sort. All of
+these extensions enable the <a
+href="#char:sorcerer"><code>sorcerer</code></a> character type, whose
+special actions revolve around using potions.</p>
+<p>Not all of the elements enabled by an extension need to be used in
+the problem, though at least one should be used. We recommend this rule
+of thumb: if an extension could be removed without modifying the problem
+at all, then it is not really enabled and should not be listed as part
+of the problem.</p>
 <p><strong><code>Alchemy</code></strong><span id="mech:Alchemy"
 data-label="mech:Alchemy"></span></p>
 <ul>
@@ -945,7 +949,7 @@ href="#var:item"><code>item</code></a>. The <a
 href="#loc:cave"><code>cave</code></a> and <a
 href="#loc:forest"><code>forest</code></a> have default <a
 href="#var:item"><code>item</code></a>s waiting to be picked up when
-some mechanics are enabled.</p>
+some extensions are enabled.</p>
 <p>The order that locations are defined in affects the default starting
 locations of <a href="#sec:characters">characters</a>. For example, the
 <a href="#char:bandit"><code>bandit</code></a> character type’s default
@@ -1133,7 +1137,7 @@ location or starting items.</p>
 <p>The only character type that is always available is the <a
 href="#char:peasant"><code>peasant</code></a>, which has no special
 qualities. All other character types are enabled by <a
-href="#sec:mechanics">mechanics</a>.</p>
+href="#sec:extensions">extensions</a>.</p>
 <p><strong><code>bandit</code></strong><span id="char:bandit"
 data-label="char:bandit"></span></p>
 <ul>
@@ -1270,7 +1274,7 @@ href="#sec:actions">actions</a> change the values assigned to variables.
 Actions are the only way to change variable values.</p>
 <p>A problem does not explicitly define its variables; they are implied
 by the other elements in the problem. For example, when the <a
-href="#mech:Violence"><code>Violence</code></a> mechanic is enabled the
+href="#mech:Violence"><code>Violence</code></a> extension is enabled the
 problem must have a <a href="#var:health"><code>health</code></a>
 variable for every <a href="#sec:characters">character</a>.</p>
 <p>A variable is identified by a name followed by zero to many
@@ -1635,11 +1639,11 @@ href="#act:walk"><code>walk</code></a> to a new location.</p></li>
 <p>Constants are special values that can be assigned to some <a
 href="#sec:variables">variables</a>. Constants are not explicitly
 defined; they are implied by which <a
-href="#sec:mechanics">mechanics</a> are enabled. For example, the <a
+href="#sec:extensions">extensions</a> are enabled. For example, the <a
 href="#const:Ghost"><code>Ghost</code></a> constant is one possible
 value for a <a href="#var:health"><code>health</code></a> variable, and
 it represents a character who has been raised from the dead. However, if
-the <a href="#mech:Undead"><code>Undead</code></a> mechanic is not
+the <a href="#mech:Undead"><code>Undead</code></a> extension is not
 enabled, this constant is not available, even if the other constants
 that can be assigned to <a href="#var:health"><code>health</code></a>
 variables are.</p>
@@ -2346,7 +2350,7 @@ preconditions that limit when it can happen and effects that modify the
 world state.</p>
 <p>A problem does not explicitly define actions; they are implied by the
 other elements in the problem. Any time an action is enabled by a <a
-href="#sec:mechanics">mechanic</a> it is available in a story. For
+href="#sec:extensions">extension</a> it is available in a story. For
 example, the <a href="#act:enthrone"><code>enthrone</code></a> action is
 always available in every story where <a
 href="#mech:Monarchy"><code>Monarchy</code></a> is enabled, though it
@@ -2385,7 +2389,7 @@ this only applies if <a href="#var:health"><code>health</code></a>
 variables exist. If the <a
 href="#mech:Sickness"><code>Sickness</code></a> or <a
 href="#mech:Violence"><code>Violence</code></a> <a
-href="#sec:mechanics">mechanics</a> are not enabled, <a
+href="#sec:extensions">extensions</a> are not enabled, <a
 href="#var:health"><code>health</code></a> variables do not exist, so
 preconditions and effects on those variables are ignored.</p>
 <p>We use a few common shorthand phrases in action preconditions:</p>
@@ -3307,23 +3311,20 @@ style="width:2cm" alt="image" /></td>
 </div>
 <h1 class="unnumbered" id="bibliography">Bibliography</h1>
 <div id="refs" class="references csl-bib-body hanging-indent"
-data-entry-spacing="0" role="list">
+role="list">
 <div id="ref-anderson1980zork" class="csl-entry" role="listitem">
 Anderson, Tim, Marl Blank, Bruce Daniels, and Dave Lebling. 1980.
-<span>“<span>Zork I</span>: The Great Underground Empire.”</span>
-Infocom.
+<em><span>Zork I</span>: The Great Underground Empire</em>. Infocom.
 </div>
 <div id="ref-cote2019textworld" class="csl-entry" role="listitem">
-Côté, Marc-Alexandre, Ákos Kádár, Xingdi Yuan, Ben Kybartas, Tavian
-Barnes, Emery Fine, James Moore, et al. 2019.
+Côté, Marc-Alexandre, Ákos Kádár, Xingdi Yuan, et al. 2019.
 <span>“<span>TextWorld</span>: A Learning Environment for Text-Based
-Games.”</span> In <em>Computer Games</em>, 41–75. Springer.
+Games.”</span> <em>Computer Games</em>, 41–75.
 </div>
 <div id="ref-ghallab1998pddl" class="csl-entry" role="listitem">
-Ghallab, Malik, Adele Howe, Drew McDermott, Ashwin Ram, Manuela Veloso,
-Daniel Weld, and David Wilkins. 1998. <span>“<span>PDDL</span>—the
-<span>Planning Domain Definition Language</span>.”</span> Yale
-University: Yale Center for Computational Vision; Control.
+Ghallab, Malik, Adele Howe, Drew McDermott, et al. 1998.
+<em><span>PDDL</span>—the <span>Planning Domain Definition
+Language</span></em>. Yale Center for Computational Vision; Control.
 </div>
 <div id="ref-kybartas2016survey" class="csl-entry" role="listitem">
 Kybartas, Ben, and Rafael Bidarra. 2016. <span>“A Survey on Story
@@ -3338,8 +3339,8 @@ Learning.”</span> <em>Poetics</em> 14 (6): 483–502.
 <div id="ref-mateas2005structuring" class="csl-entry" role="listitem">
 Mateas, Michael, and Andrew Stern. 2005. <span>“Structuring Content in
 the <span class="nocase">Fa<span class="nocase">ç</span>ade</span>
-Interactive Drama Architecture.”</span> In <em>Proceedings of the 1st
-AAAI Conference on Artificial Intelligence and Interactive Digital
+Interactive Drama Architecture.”</span> <em>Proceedings of the 1st AAAI
+Conference on Artificial Intelligence and Interactive Digital
 Entertainment</em>.
 </div>
 <div id="ref-riedl2013interactive" class="csl-entry" role="listitem">
@@ -3353,27 +3354,25 @@ World</span> Revisited.”</span> <em>Artificial Intelligence</em> 125
 (1): 119–53.
 </div>
 <div id="ref-taitler2023ipc" class="csl-entry" role="listitem">
-Taitler, Ayal, Ron Alford, Joan Espasa, Gregor Behnke, Daniel Fišer,
-Michael Gimelfarb, Florian Pommerening, et al. 2024. <span>“The 2023
+Taitler, Ayal, Ron Alford, Joan Espasa, et al. 2024. <span>“The 2023
 <span>International Planning Competition</span>.”</span> <em>AI
 Magazine</em> 45 (2): 280–96. https://doi.org/<a
 href="https://doi.org/10.1002/aaai.12169">https://doi.org/10.1002/aaai.12169</a>.
 </div>
 <div id="ref-towers2024gymnasium" class="csl-entry" role="listitem">
-Towers, Mark, Ariel Kwiatkowski, Jordan Terry, John U. Balis, Gianluca
-De Cola, Tristan Deleu, Manuel Goulão, et al. 2024.
-<span>“<span>Gymnasium</span>: A Standard Interface for Reinforcement
-Learning Environments.”</span> <a
+Towers, Mark, Ariel Kwiatkowski, Jordan Terry, et al. 2024.
+<em><span>Gymnasium</span>: A Standard Interface for Reinforcement
+Learning Environments</em>. <a
 href="https://arxiv.org/abs/2407.17032">https://arxiv.org/abs/2407.17032</a>.
 </div>
 <div id="ref-walton2019aidungeon" class="csl-entry" role="listitem">
-Walton, Nick. 2019. <span>“<span>AI Dungeon</span>.”</span> <a
-href="https://aidungeon.com/" class="uri">https://aidungeon.com/</a>.
+Walton, Nick. 2019. <em><span>AI Dungeon</span></em>. <a
+href="https://aidungeon.com/" class="uri">Https://aidungeon.com/</a>.
 </div>
 <div id="ref-ware2023collection" class="csl-entry" role="listitem">
-Ware, Stephen G., and Rachelyn Farrell. 2023. <span>“A Collection of
-Benchmark Problems for the <span>Sabre</span> Narrative Planner.”</span>
-University of Kentucky: Narrative Intelligence Lab; <a
+Ware, Stephen G., and Rachelyn Farrell. 2023. <em>A Collection of
+Benchmark Problems for the <span>Sabre</span> Narrative Planner</em>.
+Narrative Intelligence Lab; <a
 href="https://github.com/sgware/sabre-benchmarks/blob/main/report.pdf"
 class="uri">https://github.com/sgware/sabre-benchmarks/blob/main/report.pdf</a>.
 </div>

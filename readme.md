@@ -12,7 +12,7 @@ MicroTales documentation is available in [PDF](microtales.pdf) and
 
 This documentation is written in [LaTeX](https://en.wikipedia.org/wiki/LaTeX).
 It needs to be compiled 3 times to construct the index, cross-references, and
-bibliogrpahy.
+bibliography.
 
 ```
 pdflatex microtales.tex
