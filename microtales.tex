@@ -61,7 +61,7 @@ Our definitions do not assume any particular implementation. We want it to be po
 
 \paragraph{Following Genre Tropes:} While MicroTales is meant to allow a wide variety of problems, it is also attempting to follow the genre tropes of simple Medieval computer Role Playing Games. This serves two purposes. First, it allows players of an interactive MicroTales game to leverage existing genre knowledge and minimize the amount of onboarding required to understand the game's rules. Second, MicroTales is intentionally attempting to represent ``naturally occurring'' problems. Some things are unlikely or impossible, and some things are over-represented. MicroTales is not meant to represent every conceivable situation or action. It is not meant to be the only type of benchmark problem that storytelling algorithms should be tested on. We are attempting to add to, not restrict, the variety of storytelling problems available for testing.
 
-\paragraph{Active NPCs:} One purpose of MicroTales is to fill a gap we perceive in the kinds of games available to test storytelling algorithms, namely story games with active non-player characters (NPCs). Many story games, like the interactive fiction {\em Zork}~\cite{anderson1980zork} and similar games available in the TextWorld environment~\cite{cote2019textworld}, rely on the player character to take most of the actions in the story. Actions by others are often short and direct reactions to to the player. An ideal MicroTales problem will feature NPCs taking actions motivated by their own goals, ideally in ways that are predictable or at least believable to the player. Solving a MicroTales problem should involve the player anticipating the actions of NPCs and creating a situation that encourages NPCs to act in a way that accomplishes the player's goal.
+\paragraph{Active NPCs:} One purpose of MicroTales is to fill a gap we perceive in the kinds of games available to test storytelling algorithms, namely story games with active non-player characters (NPCs). Many story games, like the interactive fiction {\em Zork}~\cite{anderson1980zork} and similar games available in the TextWorld environment~\cite{cote2019textworld}, rely on the player character to take most of the actions in the story. Actions by others are often short and direct reactions to the player. An ideal MicroTales problem will feature NPCs taking actions motivated by their own goals, ideally in ways that are predictable or at least believable to the player. Solving a MicroTales problem should involve the player anticipating the actions of NPCs and creating a situation that encourages NPCs to act in a way that accomplishes the player's goal.
 
 \paragraph{Wide Variety of Actions:} Many planning and reinforcement learning benchmark problems have a limited variety of action types available. For example, the classic {\em Blocks World} planning problem~\cite{slaney2001blocks} has only one type of action---moving a block onto another block or onto the table. While it might have a large number of possible actions when we consider all blocks, it has only one {\em type} of action. Similarly, the {\em Cart Pole} reinforcement learning problem~\cite{towers2024gymnasium} has only two actions: push the cart left or right. The action can vary in the force applied, but still there is only one or two types of action. We find that storytelling problems tend to involve a large number of action types. MicroTales has many types of actions with different kinds of preconditions and effects.
 
@@ -83,11 +83,11 @@ Our definitions do not assume any particular implementation. We want it to be po
 name: "Robin Hood"
 version: 1.0
 extensions:
-- Crime    # Adds jail; allows lawful; allows arrest and release actions
-- Marriage # Adds chapel; allows smitten; allows marry action
-- Monarchy # Adds castle and Crown; allows ambitious; enthrone action
+- Crime    # Adds jail; allows lawful goal, arrest and release actions
+- Marriage # Adds chapel; allows wed goal, marry action
+- Monarchy # Adds castle and Crown; allows ruling goal, enthrone action
 - Theft    # Adds bandit, Coin, and Sword; allows steal action
-- Violence # Adds knight and Sword; allows vengeful; attack action
+- Violence # Adds knight and Sword; allows avenged goal, attack action
 locations:
 - Sherwood : forest   # Sherwood forest
 - Nottingham : castle # Nottingham Castle
@@ -106,15 +106,15 @@ initial: # Only need to list values if they are not defaults
 - [location, Robin, Sherwood] # Robin starts in Sherwood Forest.
 - [right, John, Crown]        # Prince John starts with a Crown.
 goals:
-- [Robin, greedy, Robin]           # Robin wants coins.
-- [Robin, smitten, Robin, Marian]  # Robin wants to marry Marian.
-- [John, ambitious, John]          # John wants to be king.
-- [John, smitten, John, Marian]    # John wants to marry Marian.
-- [John, vengeful, John]           # John wants his enemies dead.
-- [Sheriff, ambitious, John]       # The sheriff wants John to be king.
-- [Sheriff, lawful]                # The sheriff wants no criminals.
-- [Marian, ambitious, Marian]      # Marian wants to be monarch.
-- [smitten, Robin, Marian]         # Story goal: Robin marries Marian.
+- [Robin, rich, Robin]        # Robin wants coins.
+- [Robin, wed, Robin, Marian] # Robin wants to marry Marian.
+- [John, ruling, John]        # John wants to be king.
+- [John, wed, John, Marian]   # John wants to marry Marian.
+- [John, avenged, John]       # John wants his enemies dead.
+- [Sheriff, ruling, John]     # The sheriff wants John to be king.
+- [Sheriff, lawful]           # The sheriff wants no criminals.
+- [Marian, ruling, Marian]    # Marian wants to be monarch.
+- [wed, Robin, Marian]        # Story goal: Robin marries Marian.
 \end{code}}
 \vspace{-1em}
 \caption{An example MicroTales problem in YAML format.}
@@ -127,7 +127,7 @@ Figure \ref{fig:problemex} gives an example MicroTales problem that approximates
 
 \begin{code}
 walk(Robin, Nottingham) # Robin goes to Nottingham Castle.
-take(Robin, Coin, John) # Robin is greedy, so he wants coins.
+take(Robin, Coin, John) # Robin wants coins to become rich.
 attack(Sheriff, Robin)  # The Sheriff of Nottingham hurts Robin.
 attack(Sheriff, Robin)  # The sheriff kills Robin.
 \end{code}
@@ -147,7 +147,7 @@ walk(Marian, Abbey)          # Marian goes to the chapel.
 marry(Robin, Marian)         # Marian becomes queen by marriage.
 \end{code}
 
-This story is more interesting. Robin steals the \refconst{Crown} and becomes the \refvar{monarch}. The storyteller is faced with two possible responses from the sheriff: \refact{attack} like in the previous story, or \refact{arrest} Robin and move him to the \refloc{jail}. Killing Robin would end the story before the goal is achieved, but arresting him leaves it open for a happy ending later. Robin can't do anything from the jail, but Marian comes to free him. Marian's plan is to marry Robin and satisfy her \refgoal{ambitious} goal as well as the story goal. We consider this story more interesting because non-player characters take an active role.
+This story is more interesting. Robin steals the \refconst{Crown} and becomes the \refvar{monarch}. The storyteller is faced with two possible responses from the sheriff: \refact{attack} like in the previous story, or \refact{arrest} Robin and move him to the \refloc{jail}. Killing Robin would end the story before the goal is achieved, but arresting him leaves it open for a happy ending later. Robin can't do anything from the jail, but Marian comes to free him. Marian's plan is to marry Robin and satisfy her \refgoal{ruling} goal as well as the story goal. We consider this story more interesting because non-player characters take an active role.
 
 While this makes a plausible story, it may not work when presented as a puzzle, since the player might wonder why Robin was allowed to take several actions in a row without any response from the sheriff. Next, we'll consider a story that enforces strict turn-taking, always allowing one player action after one NPC action.
 
@@ -170,7 +170,7 @@ walk(John, Sherwood)        # John on his way to the sheriff.
 marry(Robin, Marian)        # Marian becomes queen by marriage.
 \end{code}
 
-John starts by achieving his \refgoal{ambitious} goal and becoming the \refvar{monarch}. He and Marian then \refact{walk} in the direction of Fountains Abbey to \refact{marry}. On the way, John gets robbed by Robin Hood. The player waiting for John to pass by is a prime example of a player anticipating active NPCs. Robin then goes to Nottingham Castle and crowns himself the new \refvar{monarch} before the wedding can take place. The sheriff takes the crown from Robin and goes to Sherwood Forest hoping to give the crown to John. Robin makes his way to Fountains Abbey and marries Marian, achieving the story goal.
+John starts by achieving his \refgoal{ruling} goal and becoming the \refvar{monarch}. He and Marian then \refact{walk} in the direction of Fountains Abbey to \refact{marry}. On the way, John gets robbed by Robin Hood. The player waiting for John to pass by is a prime example of a player anticipating active NPCs. Robin then goes to Nottingham Castle and crowns himself the new \refvar{monarch} before the wedding can take place. The sheriff takes the crown from Robin and goes to Sherwood Forest hoping to give the crown to John. Robin makes his way to Fountains Abbey and marries Marian, achieving the story goal.
 
 In this example, our model of storytelling assumes characters only witness actions that occur in their location (except \refact{enthrone}, which gets announced to everyone throughout the kingdom). The sheriff is not aware of Robin's crimes, since he was not in Sherwood Forest during the robbery. This model of limited observability is not required. MicroTales does not model character beliefs; that is left to the storyteller, who is free to use this or any other model. For this problem, we think it makes the characters seems more realistic, and it adds a new dimension to the puzzle by encouraging Robin to avoid witnesses to his crimes.
 
@@ -232,7 +232,7 @@ Not all of the elements enabled by an extension need to be used in the problem, 
 	\item Enables the \refloc{market} location type.
 	\item Enables the \refchar{merchant} character type.
 	\item Enables the \refconst{Coin} item constant.
-	\item Enables the \refgoal{greedy} goal.
+	\item Enables the \refgoal{rich} goal.
 	\item Enables the \refact{sell} action.
 \end{itemize}}
 
@@ -250,7 +250,7 @@ Not all of the elements enabled by an extension need to be used in the problem, 
 	\item Enables the \refchar{knight} character type.
 	\item Enables the \refvar{criminal} variable type.
 	\item Enables the \refconst{Sword} item constant.
-	\item Enables the \refgoal{chaotic} and \refgoal{lawful} goals.
+	\item Enables the \refgoal{lawful} and \refgoal{lawless} goals.
 	\item Enables the \refact{arrest}, \refact{jailbreak}, and \refact{release} actions.
 \end{itemize}}
 
@@ -282,7 +282,7 @@ Not all of the elements enabled by an extension need to be used in the problem, 
   \item Enables the \refloc{chapel} location type.
 	\item Enables the \refvar{spouse} variable type.
 	\item Enables the \refconst{Flower} item constant.
-	\item Enables the \refgoal{smitten} goal type.
+	\item Enables the \refgoal{wed} goal type.
 	\item Enables the \refact{marry} action.
 \end{itemize}}
 
@@ -292,7 +292,7 @@ Not all of the elements enabled by an extension need to be used in the problem, 
 	\item Enables the \refchar{noble} character type.
 	\item Enables the \refvar{monarch} variable type.
 	\item Enables the \refconst{Crown} item constant.
-	\item Enables the \refgoal{ambitious} goal type.
+	\item Enables the \refgoal{ruling} goal type.
 	\item Enables the \refact{enthrone} action.
 \end{itemize}}
 
@@ -301,7 +301,7 @@ Not all of the elements enabled by an extension need to be used in the problem, 
   \item Enables the \refchar{sorcerer} character type.
 	\item Enables the \refvar{health} variable type.
 	\item Enables the \refconst{CursePotion} item constant.
-	\item Enables the \refgoal{hateful} and \refgoal{loving} goal types.
+	\item Enables the \refgoal{harmed} and \refgoal{unharmed} goal types.
 	\item Enables the \refact{curse}, \refact{die}, \refact{loot}, \refact{recover}, and \refact{sicken} actions.
 \end{itemize}}
 
@@ -325,7 +325,7 @@ Not all of the elements enabled by an extension need to be used in the problem, 
 \begin{itemize}
   \item Enables the \refchar{bandit} character type.
 	\item Enables the \refconst{Coin} and \refconst{Sword} item constants.
-	\item Enables the \refgoal{greedy} goal type.
+	\item Enables the \refgoal{rich} goal type.
 	\item Enables the \refact{take} action.
 \end{itemize}}
 
@@ -343,7 +343,7 @@ Not all of the elements enabled by an extension need to be used in the problem, 
   \item Enables the \refchar{knight} character type.
 	\item Enables the \refvar{health} variable type.
 	\item Enables the \refconst{Sword} item constant.
-	\item Enables the \refgoal{hateful} and \refgoal{loving} goal types.
+	\item Enables the \refgoal{harmed} and \refgoal{unharmed} goal types.
 	\item Enables the \refact{attack}, \refact{die}, \refact{loot}, and \refact{recover} actions.
 \end{itemize}}
 
@@ -469,8 +469,8 @@ The only character type that is always available is the \refchar{peasant}, which
 \begin{itemize}
 	\item Only available when \refmech{Stealth} or \refmech{Theft} is enabled.
 	\item Starts at the first \refloc{camp} or \refloc{crossroads} defined in the problem by default.
-	\item Required not to be \refgoal{lawful}.
-	\item Recommended to be \refgoal{greedy}.
+	\item Required not to have \refgoal{lawful} goal.
+	\item Recommended to have a \refgoal{rich} goal.
 	\item Can \refact{hide} at any location, not just a \refloc{camp}.
 	\item Can \refact{take} from another character even when unarmed.
 \end{itemize}}
@@ -479,8 +479,8 @@ The only character type that is always available is the \refchar{peasant}, which
 \begin{itemize}
 	\item Only available when \refmech{Forgiveness}, \refmech{Healing}, or \refmech{Undead} is enabled.
 	\item Starts at the first \refloc{chapel} or \refloc{graveyard} defined in the problem by default.
-	\item Required not to be \refgoal{vengeful} (unless they become a \refconst{Ghost}; see \hyperref[sec:goals]{Goals}).
-	\item Recommended to be \refgoal{friendly}.
+	\item Required not to have \refgoal{avenged} goal (unless they become a \refconst{Ghost}; see \hyperref[sec:goals]{Goals}).
+	\item Recommended to have an \refgoal{obliged} goal.
 	\item Can \refact{banish} a \refconst{Ghost} even if they are not carrying a \refconst{BanishPotion}.
 	\item Can \refact{forgive} a character their crimes.
 	\item Can \refact{heal} a character even if they are not carrying a \refconst{HealPotion}.
@@ -491,8 +491,8 @@ The only character type that is always available is the \refchar{peasant}, which
 	\item Only available when \refmech{Crime} or \refmech{Violence} is enabled.
 	\item Starts at the first \refloc{castle} or \refloc{market} defined in the problem by default.
 	\item Starts with a \refconst{Sword} in their \refvar{left} hand by default.
-	\item Recommended to be \refgoal{ambitious} for a \refchar{noble}.
-	\item Recommended to be \refgoal{lawful}.
+	\item Recommended to have a \refgoal{ruling} goal for a \refchar{noble}.
+	\item Recommended to have a \refgoal{lawful} goal.
 	\item Can \refact{attack} even when not carrying a \refconst{Sword}.
 \end{itemize}}
 
@@ -501,8 +501,8 @@ The only character type that is always available is the \refchar{peasant}, which
 	\item Only available when \refmech{Commerce} is enabled.
 	\item Starts at the first \refloc{market} or \refloc{crossroads} defined in the problem by default.
 	\item Recommended to start with at least one item of any type except a \refconst{Coin}.
-	\item Required not to be \refgoal{kind}.
-	\item Recommended to be \refgoal{greedy}.
+	\item Required not to have a \refgoal{liked} goal.
+	\item Recommended to have a \refgoal{rich} goal.
 	\item Cannot \refact{sell} items at the \refloc{market}.
 \end{itemize}}
 
@@ -511,7 +511,7 @@ The only character type that is always available is the \refchar{peasant}, which
 	\item Only available when \refmech{Enchantment} or \refmech{Monarchy} is enabled.
 	\item Starts at the first \refloc{castle} or \refloc{chapel} defined in the problem by default.
 	\item Starts with a \refconst{Coin} in their \refvar{left} hand by default.
-	\item Recommended to be \refgoal{ambitious}.
+	\item Recommended to have a \refgoal{ruling} goal.
 	\item Can \refact{charm} another character even when not carrying a \refconst{CharmPotion}.
 \end{itemize}}
 
@@ -525,7 +525,7 @@ The only character type that is always available is the \refchar{peasant}, which
 	\item Only available when \refmech{Enchantment}, \refmech{Healing}, \refmech{Sickness}, \refmech{Stealth}, \refmech{Teleportation}, or \refmech{Undead} is enabled.
 	\item Starts at the first \refloc{laboratory} or \refloc{graveyard} defined in the problem by default.
 	\item Recommended to start with at least one \hyperref[sec:constants]{potion} of any type.
-	\item Recommended to be \refgoal{vengeful}.
+	\item Recommended to have an \refgoal{avenged} goal.
 	\item Can \refact{brew} a potion even when not in a \refloc{laboratory}.
 \end{itemize}}
 
@@ -562,7 +562,7 @@ Some variables, like the \refvar{relationship} between each character, are count
   \item Only available when \refmech{Crime} is enabled.
 	\item Tracks whether the \param{character} has committed any crimes.
 	\item Default value is \element{False}.
-	\item The \refgoal{chaotic} goal is satisfied when characters are criminals and not in a \refloc{jail}.
+	\item The \refgoal{lawless} goal is satisfied when characters are criminals and not in a \refloc{jail}.
 	\item The \refgoal{lawful} goal is satisfied when no characters are criminals or when all criminals are in a \refloc{jail}.
 	\item It is a crime to \refact{arrest} a character who is not a \refvar{criminal}.
 	\item It is a crime to \refact{release} prisoners from the \refloc{jail}.
@@ -579,8 +579,8 @@ Some variables, like the \refvar{relationship} between each character, are count
 	\item A \refconst{Hurt} character can do most actions but cannot \refact{walk}.
 	\item A \refconst{Dead} character cannot do most actions.
 	\item When \refmech{Undead} is enabled, a \refconst{Ghost} character cannot do most actions, but they can \refact{curse} and \refact{walk}.
-	\item The \refgoal{loving} goal is satisfied by a character being \refconst{Healthy}.
-	\item The \refgoal{hateful} goal is satisfied by a character being \refconst{Dead}.
+	\item The \refgoal{harmed} goal is satisfied by a character not being \refconst{Healthy}.
+	\item The \refgoal{unharmed} goal is satisfied by a character being \refconst{Healthy}.
 	\item The \refact{attack} and \refact{curse} actions degrades a target character's health (\refconst{Healthy} to \refconst{Hurt} or \refconst{Hurt} to \refconst{Dead}).
 	\item The \refact{sicken} action causes a \refconst{Healthy} character to become \refconst{Hurt}.
 	\item The \refact{die} action causes a \refconst{Hurt} character to become \refconst{Dead}.
@@ -613,7 +613,7 @@ Some variables, like the \refvar{relationship} between each character, are count
   \item The \param{character}'s current position on the map.
 	\item The value \None means the character is nowhere on the map.
 	\item \hyperref[sec:characters]{Character types} specify default locations. When the specified locations are not available, the default value is the first location defined in the problem.
-	\item The \refgoal{homesick} goal is satisfied by a character being at a certain location.
+	\item The \refgoal{at} goal is satisfied by a character being at a certain location.
 	\item Many actions require that a character be at a certain location or in the same location as another character they are interacting with.
 	\item Character locations can change via the \refact{arrest}, \refact{teleport}, and \refact{walk} actions.
 \end{itemize}}
@@ -634,7 +634,7 @@ Some variables, like the \refvar{relationship} between each character, are count
   \item Only available when \refmech{Monarchy} is enabled.
 	\item Tracks which character is the ruler.
 	\item Default value is \None, meaning no character is currently the monarch.
-	\item The \refgoal{ambitious} goal is satisfied by a certain character becoming the monarch.
+	\item The \refgoal{ruling} goal is satisfied by a certain character becoming the monarch.
 	\item When holding a \refconst{Crown} in a \refloc{castle}, a character can \refact{enthrone} themselves to become the monarch.
 \end{itemize}}
 
@@ -645,10 +645,10 @@ Some variables, like the \refvar{relationship} between each character, are count
 	\item The value \refconst{Friend} means the \param{character} views the \param{other} positively.
 	\item The value \refconst{Enemy} means the \param{character} views the \param{other} negatively.
 	\item Relationships are not symmetric. The \param{other}'s relationship to the \param{character} can be different.
-	\item The \refgoal{friendly} goal is satisfied by a character regarding other \refconst{Healthy} characters as \refconst{Friend}.
-	\item The \refgoal{kind} goal is satisfied by other characters regarding a character as a \refconst{Friend}.
-	\item The \refgoal{spiteful} goal is satisfied by other characters regarding a character as an \refconst{Enemy}.
-	\item The \refgoal{vengeful} goal is satisfied by a character not regarding other living characters as \refconst{Enemy}.
+	\item The \refgoal{avenged} goal is satisfied by a character not regarding other living characters as \refconst{Enemy}.
+	\item The \refgoal{disliked} goal is satisfied by other characters regarding a character as an \refconst{Enemy}.
+	\item The \refgoal{liked} goal is satisfied by other characters regarding a character as a \refconst{Friend}.
+	\item The \refgoal{obliged} goal is satisfied by a character regarding other \refconst{Healthy} characters as \refconst{Friend}.
 	\item The \refact{charm}, \refact{give}, \refact{heal}, and \refact{release} actions can cause a relationship to improve (\refconst{Enemy} to \None or \None to \refconst{Friend}).
 	\item The \refact{arrest}, \refact{attack}, \refact{banish}, \refact{curse}, and \refact{take} actions can cause a relationship to degrade (\refconst{Friend} to \None or \None to \refconst{Enemy}).
 \end{itemize}}
@@ -666,7 +666,7 @@ Some variables, like the \refvar{relationship} between each character, are count
 	\item Tracks who is married to the \param{character}.
 	\item Default value is \None, meaning the \param{character} is not married.
 	\item Marriage is symmetric. When character \element{A} has spouse \element{B}, then character \element{B} must also have spouse \element{A}.
-	\item The \refgoal{smitten} goal is satisfied when a pair of characters are one another's spouses.
+	\item The \refgoal{wed} goal is satisfied when a pair of characters are one another's spouses.
 	\item The \refact{marry} action causes two characters to become one another's spouses.
 	\item When characters die via the \refact{attack}, \refact{curse}, or \refact{die} actions, both members of a marriage have their spouse set to \None.
 \end{itemize}}
@@ -709,9 +709,9 @@ One use of constants is the items that characters carry and use in the story. Mi
 \begin{itemize}
   \item Only available when \refmech{Commerce} or \refmech{Theft} is enabled.
 	\item This is a metal item that can be held in a character's \refvar{left} or \refvar{right} hand.
-	\item The \refgoal{greedy} goal is satisfied by having coins.
+	\item The \refgoal{rich} goal is satisfied by having coins.
 	\item Any item can be converted into a coin via the \refact{sell} action at the \refloc{market}.
-	\item When \refmech{Crafting} is enabled, it can be be \refact{craft}ed from any other metal item or into any other metal item.
+	\item When \refmech{Crafting} is enabled, it can be \refact{craft}ed from any other metal item or into any other metal item.
 \end{itemize}}
 
 \defconst{Crown}{
@@ -719,7 +719,7 @@ One use of constants is the items that characters carry and use in the story. Mi
   \item Only available when \refmech{Monarchy} is enabled.
 	\item This is a metal item that can be held in a character's \refvar{left} or \refvar{right} hand.
 	\item Needed for a character to \refact{enthrone} themselves in a \refloc{castle} to become the \refvar{monarch}.
-	\item When \refmech{Crafting} is enabled, it can be be \refact{craft}ed from any other metal item or into any other metal item.
+	\item When \refmech{Crafting} is enabled, it can be \refact{craft}ed from any other metal item or into any other metal item.
 \end{itemize}}
 
 \defconst{CursePotion}{
@@ -741,8 +741,8 @@ One use of constants is the items that characters carry and use in the story. Mi
 \defconst{Enemy}{
 \begin{itemize}
   \item Assigned to a \refvar{relationship} to indicate the first character regards the second negatively.
-	\item The \refgoal{spiteful} goal is satisfied by other characters regarding a character this way.
-	\item The \refgoal{vengeful} goal is satisfied by a character not regarding others this way, or by a character's enemies being dead.
+	\item The \refgoal{disliked} goal is satisfied by other characters regarding a character this way.
+	\item The \refgoal{avenged} goal is satisfied by a character not regarding others this way, or by a character's enemies being dead.
 	\item The \refact{arrest}, \refact{attack}, \refact{banish}, \refact{curse}, and \refact{take} actions can cause a \refvar{relationship} set to \None to change to this value.
 \end{itemize}}
 
@@ -758,8 +758,8 @@ One use of constants is the items that characters carry and use in the story. Mi
 \defconst{Friend}{
 \begin{itemize}
   \item Assigned to a \refvar{relationship} to indicate the first character regards the second positively.
-	\item The \refgoal{friendly} goal is satisfied by a character regarding others this way, or by a character's friends becoming healthy.
-	\item The \refgoal{kind} goal is satisfied by other characters regarding a character this way.
+	\item The \refgoal{obliged} goal is satisfied by a character regarding others this way, or by a character's friends becoming healthy.
+	\item The \refgoal{liked} goal is satisfied by other characters regarding a character this way.
 	\item The \refact{charm}, \refact{give}, \refact{heal}, and \refact{release} actions can cause a \refvar{relationship} set to \None to change to this value.
 \end{itemize}}
 
@@ -808,7 +808,7 @@ One use of constants is the items that characters carry and use in the story. Mi
   \item Only available when \refmech{Crafting} is enabled.
 	\item This is a metal item that can be held in a character's \refvar{left} or \refvar{right} hand.
 	\item When \refmech{Crafting} is enabled, this \refvar{item} is in every \refloc{cave} by default.
-	\item When \refmech{Crafting} is enabled, it can be be \refact{craft}ed from any other metal item or into any other metal item.
+	\item When \refmech{Crafting} is enabled, it can be \refact{craft}ed from any other metal item or into any other metal item.
 \end{itemize}}
 
 \defconst{RaisePotion}{
@@ -825,7 +825,7 @@ One use of constants is the items that characters carry and use in the story. Mi
 	\item This is a metal item that can be held in a character's \refvar{left} or \refvar{right} hand.
 	\item Most characters need this to \refact{arrest} and \refact{attack} others.
 	\item Most characters need this to \refact{take} an item when the victim is \refconst{Healthy}.
-	\item When \refmech{Crafting} is enabled, it can be be \refact{craft}ed from any other metal item or into any other metal item.
+	\item When \refmech{Crafting} is enabled, it can be \refact{craft}ed from any other metal item or into any other metal item.
 \end{itemize}}
 
 \defconst{TeleportPotion}{
@@ -846,36 +846,66 @@ Similar to \hyperref[sec:variables]{variables}, a goal is one of the names defin
 
 For example, this character goal in YAML format says that \element{John} wants \element{John} to be the \refvar{monarch}:
 
-\centerline{\element{[John, ambitious, John]}}
+\centerline{\element{[John, ruling, John]}}
 
-\noindent The first part, \element{John}, specifies which character has this goal. The rest specifies the goal \element{ambitious(John)}, which is the objective that \element{John} be the \refvar{monarch}. Characters can also have goals for other characters:
+\noindent The first part, \element{John}, specifies which character has this goal. The rest specifies the goal \element{ruling(John)}, which is the objective that \element{John} be the \refvar{monarch}. Characters can also have goals for other characters:
 
-\centerline{\element{[Sheriff, ambitious, John]}}
+\centerline{\element{[Sheriff, ruling, John]}}
 
-\noindent The goal of \element{ambitious(John)} is the same, but it is held by the \element{Sheriff}. The \element{Sheriff} also wants \element{John} to be \refvar{monarch}.
+\noindent The goal of \element{ruling(John)} is the same, but it is held by the \element{Sheriff}. The \element{Sheriff} also wants \element{John} to be \refvar{monarch}.
 
 To make this a story goal instead of a character goal, we simply omit the character from the start of the sequence:
 
-\centerline{\element{[ambitious, John]}}
+\centerline{\element{[ruling, John]}}
 
-\noindent This means that \element{ambitious(John)} is a goal for the story as a whole rather than any particular character. The storyteller should try to tell a story where \element{John} becomes the \refvar{monarch}.
+\noindent This means that \element{ruling(John)} is a goal for the story as a whole rather than any particular character. The storyteller should try to tell a story where \element{John} becomes the \refvar{monarch}.
 
-Two character goals always apply and do not need to be explicitly listed. When \refmech{Sickness} or \refmech{Violence} is enabled, all characters prefer being \refconst{Healthy} over \refconst{Hurt} and prefer \refconst{Hurt} over \refconst{Dead}. Second, if \refmech{Undead} is enabled, all \refconst{Ghost}s are \refgoal{vengeful}. This means they want to kill any character who is an \refconst{Enemy}.
+Two character goals always apply and do not need to be explicitly listed. When \refmech{Sickness} or \refmech{Violence} is enabled, all characters prefer being \refconst{Healthy} over \refconst{Hurt} and prefer \refconst{Hurt} over \refconst{Dead}. Second, if \refmech{Undead} is enabled, all \refconst{Ghost}s have the \refgoal{avenged} goal toward themselves. This means they want to kill any character they regard as an \refconst{Enemy}.
 
-Goals are persistent, meaning they do not go away once they are achieved. For example, when a character is \refgoal{greedy}, they want \refconst{Coin}s. Once both of their hands are holding \refconst{Coin}s, they cannot have more, but they do not stop being \refgoal{greedy}. If they should ever lose one of their coins, they will again want more.
+Goals are persistent, meaning they do not go away once they are achieved. For example, when a character has the goal to be \refgoal{rich}, they want \refconst{Coin}s. Once both of their hands are holding \refconst{Coin}s, they cannot have more, but they do not stop having the goal to be \refgoal{rich}. If they should ever lose one of their coins, they will again want more.
 
-MicroTales does not define the relative importance of one goal to another, and when a goal can be achieved in multiple ways, it only defines ordinal preferences. For example, if a character is both \refgoal{greedy} and \refgoal{friendly}, MicroTales does not specify whether it is more important to that character to have \refconst{Coin}s or \refconst{Friend}s; this is up to the storyteller. Similarly, a \refgoal{friendly} character would prefer to have 2 \refconst{Friend}s over 1 \refconst{Friend}, but it is not necessarily twice as good to have 2 friends than it is to have 1. Again, this is left up to the storyteller.
+MicroTales does not define the relative importance of one goal to another, and when a goal can be achieved in multiple ways, it only defines ordinal preferences. For example, if a character wants to be both \refgoal{rich} and \refgoal{obliged}, MicroTales does not specify whether it is more important to that character to have \refconst{Coin}s or \refconst{Friend}s; this is up to the storyteller. Similarly, a character who wants to be \refgoal{rich} would prefer to have 2 \refconst{Coin}s over 1 \refconst{Coin}, but it is not necessarily twice as good to have 2 than it is to have 1. Again, this is left up to the storyteller.
 
 MicroTales tries to avoid imposing any particular model of what makes a good story. Some good stories may not achieve goals, and stories that achieve goals are not necessarily good stories. If goals can be ignored, why define them at all? First, MicroTales is meant to study the challenges of story planning. Goals provide constraints that make planning a story challenging because the storyteller needs to look ahead to reason about what is and is not possible when deciding what actions to take. Second, in an interactive setting, goals are what will be communicated to players about what the characters want and what the objectives are for the story. Stories are meant to involve multiple active characters, so anticipating how non-player characters will act requires information about what they want.
 
-\defgoal{ambitious}{\param{character}}{
+\defgoal{at}{\param{character}, \param{location}}{
 \begin{itemize}
-	\item Only available when \refmech{Monarchy} is enabled.
-	\item Achieved when \param{character} is the \refvar{monarch}.
-	\item When \refmech{Marriage} is enabled, this goal is also achieved when \param{character}'s \refvar{spouse} is the \refvar{monarch}.
+	\item Achieved when \param{character}'s \refvar{location} is \param{location}.
 \end{itemize}}
 
-\defgoal{chaotic}{}{
+\defgoal{avenged}{\param{character}}{
+	\begin{itemize}
+		\item Achieved by maximizing the number of other characters who \param{character} does not regard as an \refconst{Enemy} or whose \refvar{health} is \refconst{Dead}. In other words, this goal is achieved by maximizing the number of \param{other} characters for whom \element{\refvar{relationship}(character, other) $\neq$ \refconst{Enemy}} or \element{\refvar{health}(other) $=$ \refconst{Dead}}.
+		\item Opposed to \refgoal{obliged}.
+		\item This goal improves each time \param{character} stops regarding another non-\refconst{Dead} character as an \refconst{Enemy} or someone that \param{character} regards as an \refconst{Enemy} becomes \refconst{Dead}. Relationships can improve via the \refact{charm}, \refact{give}, \refact{heal}, or \refact{release} actions. Characters can die via the \refact{attack}, \refact{curse}, and \refact{die} actions.
+		\item This goal worsens each time \param{character} regards another non-\refconst{Dead} character as an \refconst{Enemy} or someone that \param{character} regards as an \refconst{Enemy} stop being \refconst{Dead}. Relationships can degrade via the \refact{arrest}, \refact{attack}, \refact{banish}, \refact{curse}, and \refact{take} actions. Characters can stop being \refconst{Dead} via the \refact{raise} and \refact{rise} actions.
+\end{itemize}}
+
+\defgoal{disliked}{\param{character}}{
+	\begin{itemize}
+		\item Achieved by maximizing the number of other characters who regard \param{character} as an \refconst{Enemy}. In other words, this goal is achieved by maximizing the number of \param{other} characters for whom \element{\refvar{relationship}(other, character) = \refconst{Enemy}}.
+		\item Opposed to \refgoal{liked}.
+		\item This goal improves each time an additional other character regards \param{character} an \refconst{Enemy}. Relationships can degrade via the \refact{arrest}, \refact{attack}, \refact{banish}, \refact{curse}, and \refact{take} actions. 
+		\item This goal worsens each time another character stops regarding \param{character} as an \refconst{Enemy}. Relationships can improve via the \refact{charm}, \refact{give}, \refact{heal}, or \refact{release} actions.
+\end{itemize}}
+
+\defgoal{harmed}{\param{character}}{
+\begin{itemize}
+	\item Only available when \refmech{Sickness} or \refmech{Violence} is enabled.
+	\item Achieved when \param{character}'s \refvar{health} is not \refconst{Healthy}.
+	\item Opposed to \refgoal{unharmed}.
+\end{itemize}}
+
+\defgoal{lawful}{}{
+\begin{itemize}
+	\item Only available when \refmech{Crime} is enabled.
+	\item Achieved by maximizing the number of characters who are not \refvar{criminal}s or who are \refvar{criminal}s but are \refconst{Dead} or in a \refloc{jail}.
+	\item Opposed to \refgoal{lawless}.
+	\item This goal improves each time an additional character meets the above requirements. This can happen when the \refact{forgive} or \refact{repent} actions make the character no longer a criminal, when a criminal moves to a \refloc{jail}, or when a criminal dies.
+	\item This goal worsens each time a character stops meeting the above requirements. Typically this happens when a living free character commits a crime (potential crimes include the \refact{arrest}, \refact{attack}, \refact{curse}, \refact{release}, and \refact{take} actions), but it can also happen when a criminal leaves a \refloc{jail} or returns from the dead via the \refact{raise} or \refact{rise} actions.
+\end{itemize}}
+
+\defgoal{lawless}{}{
 \begin{itemize}
 	\item Only available when \refmech{Crime} is enabled.
 	\item Achieved by maximizing the number of characters who are \refvar{criminal}s, are not \refconst{Dead}, and free (not in a \refloc{jail}).
@@ -884,76 +914,46 @@ MicroTales tries to avoid imposing any particular model of what makes a good sto
 	\item This goal worsens each time a character stops meeting the above requirements. This can happen when a character's crimes are erased, when a criminal moves to a \refloc{jail}, or when a criminal dies. Crimes are removed via the \refact{forgive} and \refact{repent} actions. Characters can move to a \refloc{jail} via the \refact{arrest}, \refact{teleport}, and \refact{walk} actions. Characters can die via the \refact{attack}, \refact{curse}, and \refact{die} actions.
 \end{itemize}}
 
-\defgoal{friendly}{\param{character}}{
-\begin{itemize}
-	\item Achieved by maximizing the number of other characters who \param{character} regards as a \refconst{Friend} and whose \refvar{health} is \refconst{Healthy}. In other words, this goal is achieved by maximizing the number of \param{other} characters for whom \element{\refvar{relationship}(character, other) = \refconst{Friend}} and \element{\refvar{health}(other) = \refconst{Healthy}}. 
-	\item Opposed to \refgoal{vengeful}.
-	\item This goal improves each time \param{character} regards a new \refconst{Healthy} character as a \refconst{Friend} or someone \param{character} regards as a \refconst{Friend} becomes \refconst{Healthy}. Relationships can improve via the \refact{charm}, \refact{give}, \refact{heal}, or \refact{release} actions. Characters can become \refconst{Healthy} via the \refact{heal} and \refact{recover} actions.
-	\item This goal worsens each time \param{character} stops regarding a \refconst{Healthy} character as a \refconst{Friend} or someone \param{character} regards as a \refconst{Friend} stops being \refconst{Healthy}. Relationships can degrade via the \refact{arrest}, \refact{attack}, \refact{banish}, \refact{curse}, and \refact{take} actions. Characters can stop being \refconst{Healthy} via the \refact{attack}, \refact{curse}, and \refact{sicken} actions.
-\end{itemize}}
-
-\defgoal{greedy}{\param{character}}{
-\begin{itemize}
-  \item Only available when \refmech{Commerce} or \refmech{Theft} is enabled.
-	\item Achieved by maximizing the number of \refconst{Coin} items \param{character} is holding.
-\end{itemize}}
-
-\defgoal{hateful}{\param{character}}{
-\begin{itemize}
-  \item Only available when \refmech{Sickness} or \refmech{Violence} is enabled.
-	\item Achieved when \param{character}'s \refvar{health} is not \refconst{Healthy}.
-	\item Opposed to \refgoal{loving}.
-\end{itemize}}
-
-\defgoal{homesick}{\param{character}, \param{location}}{
-\begin{itemize}
-	\item Achieved when \param{character}'s \refvar{location} is \param{location}.
-\end{itemize}}
-
-\defgoal{kind}{\param{character}}{
+\defgoal{liked}{\param{character}}{
 \begin{itemize}
 	\item Achieved by maximizing the number of other characters who regard \param{character} as a \refconst{Friend}. In other words, this goal is achieved by maximizing the number of \param{other} characters for whom \element{\refvar{relationship}(other, character) = \refconst{Friend}}.
-	\item Opposed to \refgoal{spiteful}.
+	\item Opposed to \refgoal{disliked}.
 	\item This goal improves each time an additional other character regards \param{character} a \refconst{Friend}. Relationships can improve via the \refact{charm}, \refact{give}, \refact{heal}, or \refact{release} actions.
 	\item This goal worsens each time another character stops regarding \param{character} as a \refconst{Friend}. Relationships can degrade via the \refact{arrest}, \refact{attack}, \refact{banish}, \refact{curse}, and \refact{take} actions.
 \end{itemize}}
 
-\defgoal{lawful}{}{
+\defgoal{obliged}{\param{character}}{
 \begin{itemize}
-	\item Only available when \refmech{Crime} is enabled.
-	\item Achieved by maximizing the number of characters who are not \refvar{criminal}s or who are \refvar{criminal}s but are \refconst{Dead} or in a \refloc{jail}.
-	\item Opposed to \refgoal{chaotic}.
-	\item This goal improves each time an additional character meets the above requirements. This can happen when the \refact{forgive} or \refact{repent} actions make the character no longer a criminal, when a criminal moves to a \refloc{jail}, or when a criminal dies.
-	\item This goal worsens each time a character stops meeting the above requirements. Typically this happens when a living free character commits a crime (potential crimes include the \refact{arrest}, \refact{attack}, \refact{curse}, \refact{release}, and \refact{take} actions), but it can also happen when a criminal leaves a \refloc{jail} or returns from the dead via the \refact{raise} or \refact{rise} actions.
+	\item Achieved by maximizing the number of other characters who \param{character} regards as a \refconst{Friend} and whose \refvar{health} is \refconst{Healthy}. In other words, this goal is achieved by maximizing the number of \param{other} characters for whom \element{\refvar{relationship}(character, other) = \refconst{Friend}} and \element{\refvar{health}(other) = \refconst{Healthy}}. 
+	\item Opposed to \refgoal{avenged}.
+	\item This goal improves each time \param{character} regards a new \refconst{Healthy} character as a \refconst{Friend} or someone \param{character} regards as a \refconst{Friend} becomes \refconst{Healthy}. Relationships can improve via the \refact{charm}, \refact{give}, \refact{heal}, or \refact{release} actions. Characters can become \refconst{Healthy} via the \refact{heal} and \refact{recover} actions.
+	\item This goal worsens each time \param{character} stops regarding a \refconst{Healthy} character as a \refconst{Friend} or someone \param{character} regards as a \refconst{Friend} stops being \refconst{Healthy}. Relationships can degrade via the \refact{arrest}, \refact{attack}, \refact{banish}, \refact{curse}, and \refact{take} actions. Characters can stop being \refconst{Healthy} via the \refact{attack}, \refact{curse}, and \refact{sicken} actions.
 \end{itemize}}
 
-\defgoal{loving}{\param{character}}{
+\defgoal{rich}{\param{character}}{
+\begin{itemize}
+	\item Only available when \refmech{Commerce} or \refmech{Theft} is enabled.
+	\item Achieved by maximizing the number of \refconst{Coin} items \param{character} is holding.
+\end{itemize}}
+
+\defgoal{ruling}{\param{character}}{
+\begin{itemize}
+	\item Only available when \refmech{Monarchy} is enabled.
+	\item Achieved when \param{character} is the \refvar{monarch}.
+	\item When \refmech{Marriage} is enabled, this goal is also achieved when \param{character}'s \refvar{spouse} is the \refvar{monarch}.
+\end{itemize}}
+
+\defgoal{unharmed}{\param{character}}{
 \begin{itemize}
   \item Only available when \refmech{Sickness} or \refmech{Violence} is enabled.
 	\item Achieved when \param{character}'s \refvar{health} is \refconst{Healthy}.
-	\item Opposed to \refgoal{hateful}.
+	\item Opposed to \refgoal{harmed}.
 \end{itemize}}
 
-\defgoal{smitten}{\param{character}, \param{spouse}}{
+\defgoal{wed}{\param{character}, \param{spouse}}{
 \begin{itemize}
 	\item Only available when \refmech{Marriage} is enabled.
 	\item Achieved when \param{character}'s \refvar{spouse} is \param{spouse}.
-\end{itemize}}
-
-\defgoal{spiteful}{\param{character}}{
-\begin{itemize}
-	\item Achieved by maximizing the number of other characters who regard \param{character} as an \refconst{Enemy}. In other words, this goal is achieved by maximizing the number of \param{other} characters for whom \element{\refvar{relationship}(other, character) = \refconst{Enemy}}.
-	\item Opposed to \refgoal{kind}.
-	\item This goal improves each time an additional other character regards \param{character} an \refconst{Enemy}. Relationships can degrade via the \refact{arrest}, \refact{attack}, \refact{banish}, \refact{curse}, and \refact{take} actions. 
-	\item This goal worsens each time another character stops regarding \param{character} as an \refconst{Enemy}. Relationships can improve via the \refact{charm}, \refact{give}, \refact{heal}, or \refact{release} actions.
-\end{itemize}}
-
-\defgoal{vengeful}{\param{character}}{
-\begin{itemize}
-	\item Achieved by maximizing the number of other characters who \param{character} does not regard as an \refconst{Enemy} or whose \refvar{health} is \refconst{Dead}. In other words, this goal is achieved by maximizing the number of \param{other} characters for whom \element{\refvar{relationship}(character, other) $\neq$ \refconst{Enemy}} or \element{\refvar{health}(other) $=$ \refconst{Dead}}.
-	\item Opposed to \refgoal{friendly}.
-	\item This goal improves each time \param{character} stops regarding another non-\refconst{Dead} character as an \refconst{Enemy} or someone that \param{character} regards as an \refconst{Enemy} becomes \refconst{Dead}. Relationships can improve via the \refact{charm}, \refact{give}, \refact{heal}, or \refact{release} actions. Characters can die via the \refact{attack}, \refact{curse}, and \refact{die} actions.
-	\item This goal worsens each time \param{character} regards another non-\refconst{Dead} character as an \refconst{Enemy} or someone that \param{character} regards as an \refconst{Enemy} stop being \refconst{Dead}. Relationships can degrade via the \refact{arrest}, \refact{attack}, \refact{banish}, \refact{curse}, and \refact{take} actions. Characters can stop being \refconst{Dead} via the \refact{raise} and \refact{rise} actions.
 \end{itemize}}
 
 \newpage
@@ -966,7 +966,7 @@ A problem does not explicitly define actions; they are implied by the other elem
 
 Like \hyperref[sec:variables]{variables} and \hyperref[sec:goals]{goals}, actions are parameterized. The list of parameters are given in parentheses after the name.
 
-An action's preconditions are meant as minimal restrictions for an action to seem believable based on the world state. Action preconditions do not attempt to restrict when an action makes narrative sense. For example, it probably does not make narrative sense for a \refgoal{greedy} character to \refact{give} away a \refconst{Coin}, but MicroTales does not prevent this because one purpose of MicroTales is to study different models of when actions make sense. Ideally, a character's actions are determined by their character goals and the story goals, though this is not required, and it is not enforced by preconditions. To study the generation of good stories, it must be possible to generate bad stories.
+An action's preconditions are meant as minimal restrictions for an action to seem believable based on the world state. Action preconditions do not attempt to restrict when an action makes narrative sense. For example, it probably does not make narrative sense for a character who wants to be \refgoal{rich} to \refact{give} away their \refconst{Coin}, but MicroTales does not prevent this because one purpose of MicroTales is to study different models of when actions make sense. Ideally, a character's actions are determined by their character goals and the story goals, though this is not required, and it is not enforced by preconditions. To study the generation of good stories, it must be possible to generate bad stories.
 
 Some actions have an active version that is done by a character and a passive version that simply happens. For example, when a character is \refconst{Hurt}, they can be made \refconst{Healthy} again via by the \refact{heal} action, which is actively done by a character, but they can also simply get better via the \refact{recover} action. Actions not taken by characters provide flexibility in solving problems, but may be perceived as a {\em deus ex machina}. 
 

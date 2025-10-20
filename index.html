@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Stephen G. Ware and Molly Siler" />
-  <meta name="dcterms.date" content="2025-10-12" />
+  <meta name="dcterms.date" content="2025-10-19" />
   <title>MicroTales: Story Planning Benchmark Problems that Scale along Several Dimensions Version 1.0</title>
   <style>
     /* Default styles provided by pandoc.
@@ -198,7 +198,7 @@
 Scale along Several Dimensions<br />
 <span>Version 1.0</span></h1>
 <p class="author">Stephen G. Ware and Molly Siler</p>
-<p class="date">2025-10-12</p>
+<p class="date">2025-10-19</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <h2 id="toc-title">Contents</h2>
@@ -354,7 +354,7 @@ data-cites="anderson1980zork">(Anderson et al. 1980)</span> and similar
 games available in the TextWorld environment <span class="citation"
 data-cites="cote2019textworld">(Côté et al. 2019)</span>, rely on the
 player character to take most of the actions in the story. Actions by
-others are often short and direct reactions to to the player. An ideal
+others are often short and direct reactions to the player. An ideal
 MicroTales problem will feature NPCs taking actions motivated by their
 own goals, ideally in ways that are predictable or at least believable
 to the player. Solving a MicroTales problem should involve the player
@@ -447,11 +447,11 @@ curating interesting problem sets by hand is also encouraged.</p>
 <pre><code>name: &quot;Robin Hood&quot;
 version: 1.0
 extensions:
-- Crime # Adds jail; allows lawful; allows arrest and release actions
-- Marriage # Adds chapel; allows smitten; allows marry action
-- Monarchy # Adds castle and Crown; allows ambitious; enthrone action
+- Crime # Adds jail; allows lawful goal, arrest and release actions
+- Marriage # Adds chapel; allows wed goal, marry action
+- Monarchy # Adds castle and Crown; allows ruling goal, enthrone action
 - Theft # Adds bandit, Coin, and Sword; allows steal action
-- Violence # Adds knight and Sword; allows vengeful; attack action
+- Violence # Adds knight and Sword; allows avenged goal, attack action
 locations:
 - Sherwood : forest # Sherwood forest
 - Nottingham : castle # Nottingham Castle
@@ -470,15 +470,15 @@ initial: # Only need to list values if they are not defaults
 - [location, Robin, Sherwood] # Robin starts in Sherwood Forest.
 - [right, John, Crown] # Prince John starts with a Crown.
 goals:
-- [Robin, greedy, Robin] # Robin wants coins.
-- [Robin, smitten, Robin, Marian] # Robin wants to marry Marian.
-- [John, ambitious, John] # John wants to be king.
-- [John, smitten, John, Marian] # John wants to marry Marian.
-- [John, vengeful, John] # John wants his enemies dead.
-- [Sheriff, ambitious, John] # The sheriff wants John to be king.
+- [Robin, rich, Robin] # Robin wants coins.
+- [Robin, wed, Robin, Marian] # Robin wants to marry Marian.
+- [John, ruling, John] # John wants to be king.
+- [John, wed, John, Marian] # John wants to marry Marian.
+- [John, avenged, John] # John wants his enemies dead.
+- [Sheriff, ruling, John] # The sheriff wants John to be king.
 - [Sheriff, lawful] # The sheriff wants no criminals.
-- [Marian, ambitious, Marian] # Marian wants to be monarch.
-- [smitten, Robin, Marian] # Story goal: Robin marries Marian.</code></pre>
+- [Marian, ruling, Marian] # Marian wants to be monarch.
+- [wed, Robin, Marian] # Story goal: Robin marries Marian.</code></pre>
 <figcaption>An example MicroTales problem in YAML format.</figcaption>
 </figure>
 <h1 id="example-problem">Example Problem</h1>
@@ -491,7 +491,7 @@ in this problem and why they might be desirable or undesirable. We
 assume this problem is presented as an interactive game where the player
 controls Robin Hood.</p>
 <pre><code>walk(Robin, Nottingham) # Robin goes to Nottingham Castle.
-take(Robin, Coin, John) # Robin is greedy, so he wants coins.
+take(Robin, Coin, John) # Robin wants coins to become rich.
 attack(Sheriff, Robin) # The Sheriff of Nottingham hurts Robin.
 attack(Sheriff, Robin) # The sheriff kills Robin.</code></pre>
 <p>This is a simple but unsuccessful story. Robin robs Prince John, but
@@ -520,9 +520,9 @@ the <a href="#loc:jail"><code>jail</code></a>. Killing Robin would end
 the story before the goal is achieved, but arresting him leaves it open
 for a happy ending later. Robin can’t do anything from the jail, but
 Marian comes to free him. Marian’s plan is to marry Robin and satisfy
-her <a href="#goal:ambitious"><code>ambitious</code></a> goal as well as
-the story goal. We consider this story more interesting because
-non-player characters take an active role.</p>
+her <a href="#goal:ruling"><code>ruling</code></a> goal as well as the
+story goal. We consider this story more interesting because non-player
+characters take an active role.</p>
 <p>While this makes a plausible story, it may not work when presented as
 a puzzle, since the player might wonder why Robin was allowed to take
 several actions in a row without any response from the sheriff. Next,
@@ -545,8 +545,8 @@ walk(Robin, Abbey) # Robin on his way to marry.
 walk(John, Sherwood) # John on his way to the sheriff.
 marry(Robin, Marian) # Marian becomes queen by marriage.</code></pre>
 <p>John starts by achieving his <a
-href="#goal:ambitious"><code>ambitious</code></a> goal and becoming the
-<a href="#var:monarch"><code>monarch</code></a>. He and Marian then <a
+href="#goal:ruling"><code>ruling</code></a> goal and becoming the <a
+href="#var:monarch"><code>monarch</code></a>. He and Marian then <a
 href="#act:walk"><code>walk</code></a> in the direction of Fountains
 Abbey to <a href="#act:marry"><code>marry</code></a>. On the way, John
 gets robbed by Robin Hood. The player waiting for John to pass by is a
@@ -724,7 +724,7 @@ location type.</p></li>
 character type.</p></li>
 <li><p>Enables the <a href="#const:Coin"><code>Coin</code></a> item
 constant.</p></li>
-<li><p>Enables the <a href="#goal:greedy"><code>greedy</code></a>
+<li><p>Enables the <a href="#goal:rich"><code>rich</code></a>
 goal.</p></li>
 <li><p>Enables the <a href="#act:sell"><code>sell</code></a>
 action.</p></li>
@@ -755,8 +755,8 @@ character type.</p></li>
 variable type.</p></li>
 <li><p>Enables the <a href="#const:Sword"><code>Sword</code></a> item
 constant.</p></li>
-<li><p>Enables the <a href="#goal:chaotic"><code>chaotic</code></a> and
-<a href="#goal:lawful"><code>lawful</code></a> goals.</p></li>
+<li><p>Enables the <a href="#goal:lawful"><code>lawful</code></a> and <a
+href="#goal:lawless"><code>lawless</code></a> goals.</p></li>
 <li><p>Enables the <a href="#act:arrest"><code>arrest</code></a>, <a
 href="#act:jailbreak"><code>jailbreak</code></a>, and <a
 href="#act:release"><code>release</code></a> actions.</p></li>
@@ -807,7 +807,7 @@ location type.</p></li>
 variable type.</p></li>
 <li><p>Enables the <a href="#const:Flower"><code>Flower</code></a> item
 constant.</p></li>
-<li><p>Enables the <a href="#goal:smitten"><code>smitten</code></a> goal
+<li><p>Enables the <a href="#goal:wed"><code>wed</code></a> goal
 type.</p></li>
 <li><p>Enables the <a href="#act:marry"><code>marry</code></a>
 action.</p></li>
@@ -823,8 +823,8 @@ character type.</p></li>
 variable type.</p></li>
 <li><p>Enables the <a href="#const:Crown"><code>Crown</code></a> item
 constant.</p></li>
-<li><p>Enables the <a href="#goal:ambitious"><code>ambitious</code></a>
-goal type.</p></li>
+<li><p>Enables the <a href="#goal:ruling"><code>ruling</code></a> goal
+type.</p></li>
 <li><p>Enables the <a href="#act:enthrone"><code>enthrone</code></a>
 action.</p></li>
 </ul>
@@ -838,8 +838,8 @@ variable type.</p></li>
 <li><p>Enables the <a
 href="#const:CursePotion"><code>CursePotion</code></a> item
 constant.</p></li>
-<li><p>Enables the <a href="#goal:hateful"><code>hateful</code></a> and
-<a href="#goal:loving"><code>loving</code></a> goal types.</p></li>
+<li><p>Enables the <a href="#goal:harmed"><code>harmed</code></a> and <a
+href="#goal:unharmed"><code>unharmed</code></a> goal types.</p></li>
 <li><p>Enables the <a href="#act:curse"><code>curse</code></a>, <a
 href="#act:die"><code>die</code></a>, <a
 href="#act:loot"><code>loot</code></a>, <a
@@ -880,7 +880,7 @@ data-label="mech:Theft"></span></p>
 character type.</p></li>
 <li><p>Enables the <a href="#const:Coin"><code>Coin</code></a> and <a
 href="#const:Sword"><code>Sword</code></a> item constants.</p></li>
-<li><p>Enables the <a href="#goal:greedy"><code>greedy</code></a> goal
+<li><p>Enables the <a href="#goal:rich"><code>rich</code></a> goal
 type.</p></li>
 <li><p>Enables the <a href="#act:take"><code>take</code></a>
 action.</p></li>
@@ -913,8 +913,8 @@ character type.</p></li>
 variable type.</p></li>
 <li><p>Enables the <a href="#const:Sword"><code>Sword</code></a> item
 constant.</p></li>
-<li><p>Enables the <a href="#goal:hateful"><code>hateful</code></a> and
-<a href="#goal:loving"><code>loving</code></a> goal types.</p></li>
+<li><p>Enables the <a href="#goal:harmed"><code>harmed</code></a> and <a
+href="#goal:unharmed"><code>unharmed</code></a> goal types.</p></li>
 <li><p>Enables the <a href="#act:attack"><code>attack</code></a>, <a
 href="#act:die"><code>die</code></a>, <a
 href="#act:loot"><code>loot</code></a>, and <a
@@ -1147,10 +1147,10 @@ href="#mech:Theft"><code>Theft</code></a> is enabled.</p></li>
 <li><p>Starts at the first <a href="#loc:camp"><code>camp</code></a> or
 <a href="#loc:crossroads"><code>crossroads</code></a> defined in the
 problem by default.</p></li>
-<li><p>Required not to be <a
-href="#goal:lawful"><code>lawful</code></a>.</p></li>
-<li><p>Recommended to be <a
-href="#goal:greedy"><code>greedy</code></a>.</p></li>
+<li><p>Required not to have <a
+href="#goal:lawful"><code>lawful</code></a> goal.</p></li>
+<li><p>Recommended to have a <a href="#goal:rich"><code>rich</code></a>
+goal.</p></li>
 <li><p>Can <a href="#act:hide"><code>hide</code></a> at any location,
 not just a <a href="#loc:camp"><code>camp</code></a>.</p></li>
 <li><p>Can <a href="#act:take"><code>take</code></a> from another
@@ -1166,12 +1166,12 @@ href="#mech:Undead"><code>Undead</code></a> is enabled.</p></li>
 <li><p>Starts at the first <a href="#loc:chapel"><code>chapel</code></a>
 or <a href="#loc:graveyard"><code>graveyard</code></a> defined in the
 problem by default.</p></li>
-<li><p>Required not to be <a
-href="#goal:vengeful"><code>vengeful</code></a> (unless they become a <a
-href="#const:Ghost"><code>Ghost</code></a>; see <a
+<li><p>Required not to have <a
+href="#goal:avenged"><code>avenged</code></a> goal (unless they become a
+<a href="#const:Ghost"><code>Ghost</code></a>; see <a
 href="#sec:goals">Goals</a>).</p></li>
-<li><p>Recommended to be <a
-href="#goal:friendly"><code>friendly</code></a>.</p></li>
+<li><p>Recommended to have an <a
+href="#goal:obliged"><code>obliged</code></a> goal.</p></li>
 <li><p>Can <a href="#act:banish"><code>banish</code></a> a <a
 href="#const:Ghost"><code>Ghost</code></a> even if they are not carrying
 a <a href="#const:BanishPotion"><code>BanishPotion</code></a>.</p></li>
@@ -1193,11 +1193,11 @@ by default.</p></li>
 <li><p>Starts with a <a href="#const:Sword"><code>Sword</code></a> in
 their <a href="#var:left"><code>left</code></a> hand by
 default.</p></li>
-<li><p>Recommended to be <a
-href="#goal:ambitious"><code>ambitious</code></a> for a <a
+<li><p>Recommended to have a <a
+href="#goal:ruling"><code>ruling</code></a> goal for a <a
 href="#char:noble"><code>noble</code></a>.</p></li>
-<li><p>Recommended to be <a
-href="#goal:lawful"><code>lawful</code></a>.</p></li>
+<li><p>Recommended to have a <a
+href="#goal:lawful"><code>lawful</code></a> goal.</p></li>
 <li><p>Can <a href="#act:attack"><code>attack</code></a> even when not
 carrying a <a href="#const:Sword"><code>Sword</code></a>.</p></li>
 </ul>
@@ -1211,10 +1211,10 @@ or <a href="#loc:crossroads"><code>crossroads</code></a> defined in the
 problem by default.</p></li>
 <li><p>Recommended to start with at least one item of any type except a
 <a href="#const:Coin"><code>Coin</code></a>.</p></li>
-<li><p>Required not to be <a
-href="#goal:kind"><code>kind</code></a>.</p></li>
-<li><p>Recommended to be <a
-href="#goal:greedy"><code>greedy</code></a>.</p></li>
+<li><p>Required not to have a <a
+href="#goal:liked"><code>liked</code></a> goal.</p></li>
+<li><p>Recommended to have a <a href="#goal:rich"><code>rich</code></a>
+goal.</p></li>
 <li><p>Cannot <a href="#act:sell"><code>sell</code></a> items at the <a
 href="#loc:market"><code>market</code></a>.</p></li>
 </ul>
@@ -1230,8 +1230,8 @@ by default.</p></li>
 <li><p>Starts with a <a href="#const:Coin"><code>Coin</code></a> in
 their <a href="#var:left"><code>left</code></a> hand by
 default.</p></li>
-<li><p>Recommended to be <a
-href="#goal:ambitious"><code>ambitious</code></a>.</p></li>
+<li><p>Recommended to have a <a
+href="#goal:ruling"><code>ruling</code></a> goal.</p></li>
 <li><p>Can <a href="#act:charm"><code>charm</code></a> another character
 even when not carrying a <a
 href="#const:CharmPotion"><code>CharmPotion</code></a>.</p></li>
@@ -1260,8 +1260,8 @@ href="#loc:graveyard"><code>graveyard</code></a> defined in the problem
 by default.</p></li>
 <li><p>Recommended to start with at least one <a
 href="#sec:constants">potion</a> of any type.</p></li>
-<li><p>Recommended to be <a
-href="#goal:vengeful"><code>vengeful</code></a>.</p></li>
+<li><p>Recommended to have an <a
+href="#goal:avenged"><code>avenged</code></a> goal.</p></li>
 <li><p>Can <a href="#act:brew"><code>brew</code></a> a potion even when
 not in a <a href="#loc:laboratory"><code>laboratory</code></a>.</p></li>
 </ul>
@@ -1357,7 +1357,7 @@ is enabled.</p></li>
 <li><p>Tracks whether the <em>character</em> has committed any
 crimes.</p></li>
 <li><p>Default value is <code>False</code>.</p></li>
-<li><p>The <a href="#goal:chaotic"><code>chaotic</code></a> goal is
+<li><p>The <a href="#goal:lawless"><code>lawless</code></a> goal is
 satisfied when characters are criminals and not in a <a
 href="#loc:jail"><code>jail</code></a>.</p></li>
 <li><p>The <a href="#goal:lawful"><code>lawful</code></a> goal is
@@ -1404,12 +1404,12 @@ most actions.</p></li>
 <a href="#const:Ghost"><code>Ghost</code></a> character cannot do most
 actions, but they can <a href="#act:curse"><code>curse</code></a> and <a
 href="#act:walk"><code>walk</code></a>.</p></li>
-<li><p>The <a href="#goal:loving"><code>loving</code></a> goal is
+<li><p>The <a href="#goal:harmed"><code>harmed</code></a> goal is
+satisfied by a character not being <a
+href="#const:Healthy"><code>Healthy</code></a>.</p></li>
+<li><p>The <a href="#goal:unharmed"><code>unharmed</code></a> goal is
 satisfied by a character being <a
 href="#const:Healthy"><code>Healthy</code></a>.</p></li>
-<li><p>The <a href="#goal:hateful"><code>hateful</code></a> goal is
-satisfied by a character being <a
-href="#const:Dead"><code>Dead</code></a>.</p></li>
 <li><p>The <a href="#act:attack"><code>attack</code></a> and <a
 href="#act:curse"><code>curse</code></a> actions degrades a target
 character’s health (<a href="#const:Healthy"><code>Healthy</code></a> to
@@ -1490,8 +1490,8 @@ map.</p></li>
 <li><p><a href="#sec:characters">Character types</a> specify default
 locations. When the specified locations are not available, the default
 value is the first location defined in the problem.</p></li>
-<li><p>The <a href="#goal:homesick"><code>homesick</code></a> goal is
-satisfied by a character being at a certain location.</p></li>
+<li><p>The <a href="#goal:at"><code>at</code></a> goal is satisfied by a
+character being at a certain location.</p></li>
 <li><p>Many actions require that a character be at a certain location or
 in the same location as another character they are interacting
 with.</p></li>
@@ -1529,7 +1529,7 @@ href="#mech:Monarchy"><code>Monarchy</code></a> is enabled.</p></li>
 <li><p>Tracks which character is the ruler.</p></li>
 <li><p>Default value is <code>Null</code>, meaning no character is
 currently the monarch.</p></li>
-<li><p>The <a href="#goal:ambitious"><code>ambitious</code></a> goal is
+<li><p>The <a href="#goal:ruling"><code>ruling</code></a> goal is
 satisfied by a certain character becoming the monarch.</p></li>
 <li><p>When holding a <a href="#const:Crown"><code>Crown</code></a> in a
 <a href="#loc:castle"><code>castle</code></a>, a character can <a
@@ -1554,19 +1554,19 @@ the <em>character</em> views the <em>other</em> positively.</p></li>
 <em>character</em> views the <em>other</em> negatively.</p></li>
 <li><p>Relationships are not symmetric. The <em>other</em>’s
 relationship to the <em>character</em> can be different.</p></li>
-<li><p>The <a href="#goal:friendly"><code>friendly</code></a> goal is
+<li><p>The <a href="#goal:avenged"><code>avenged</code></a> goal is
+satisfied by a character not regarding other living characters as <a
+href="#const:Enemy"><code>Enemy</code></a>.</p></li>
+<li><p>The <a href="#goal:disliked"><code>disliked</code></a> goal is
+satisfied by other characters regarding a character as an <a
+href="#const:Enemy"><code>Enemy</code></a>.</p></li>
+<li><p>The <a href="#goal:liked"><code>liked</code></a> goal is
+satisfied by other characters regarding a character as a <a
+href="#const:Friend"><code>Friend</code></a>.</p></li>
+<li><p>The <a href="#goal:obliged"><code>obliged</code></a> goal is
 satisfied by a character regarding other <a
 href="#const:Healthy"><code>Healthy</code></a> characters as <a
 href="#const:Friend"><code>Friend</code></a>.</p></li>
-<li><p>The <a href="#goal:kind"><code>kind</code></a> goal is satisfied
-by other characters regarding a character as a <a
-href="#const:Friend"><code>Friend</code></a>.</p></li>
-<li><p>The <a href="#goal:spiteful"><code>spiteful</code></a> goal is
-satisfied by other characters regarding a character as an <a
-href="#const:Enemy"><code>Enemy</code></a>.</p></li>
-<li><p>The <a href="#goal:vengeful"><code>vengeful</code></a> goal is
-satisfied by a character not regarding other living characters as <a
-href="#const:Enemy"><code>Enemy</code></a>.</p></li>
 <li><p>The <a href="#act:charm"><code>charm</code></a>, <a
 href="#act:give"><code>give</code></a>, <a
 href="#act:heal"><code>heal</code></a>, and <a
@@ -1610,8 +1610,8 @@ href="#mech:Marriage"><code>Marriage</code></a> is enabled.</p></li>
 <li><p>Marriage is symmetric. When character <code>A</code> has spouse
 <code>B</code>, then character <code>B</code> must also have spouse
 <code>A</code>.</p></li>
-<li><p>The <a href="#goal:smitten"><code>smitten</code></a> goal is
-satisfied when a pair of characters are one another’s spouses.</p></li>
+<li><p>The <a href="#goal:wed"><code>wed</code></a> goal is satisfied
+when a pair of characters are one another’s spouses.</p></li>
 <li><p>The <a href="#act:marry"><code>marry</code></a> action causes two
 characters to become one another’s spouses.</p></li>
 <li><p>When characters die via the <a
@@ -1707,13 +1707,13 @@ href="#mech:Theft"><code>Theft</code></a> is enabled.</p></li>
 <li><p>This is a metal item that can be held in a character’s <a
 href="#var:left"><code>left</code></a> or <a
 href="#var:right"><code>right</code></a> hand.</p></li>
-<li><p>The <a href="#goal:greedy"><code>greedy</code></a> goal is
-satisfied by having coins.</p></li>
+<li><p>The <a href="#goal:rich"><code>rich</code></a> goal is satisfied
+by having coins.</p></li>
 <li><p>Any item can be converted into a coin via the <a
 href="#act:sell"><code>sell</code></a> action at the <a
 href="#loc:market"><code>market</code></a>.</p></li>
 <li><p>When <a href="#mech:Crafting"><code>Crafting</code></a> is
-enabled, it can be be <a href="#act:craft"><code>craft</code></a>ed from
+enabled, it can be <a href="#act:craft"><code>craft</code></a>ed from
 any other metal item or into any other metal item.</p></li>
 </ul>
 <p><strong><code>Crown</code></strong><span id="const:Crown"
@@ -1729,7 +1729,7 @@ href="#act:enthrone"><code>enthrone</code></a> themselves in a <a
 href="#loc:castle"><code>castle</code></a> to become the <a
 href="#var:monarch"><code>monarch</code></a>.</p></li>
 <li><p>When <a href="#mech:Crafting"><code>Crafting</code></a> is
-enabled, it can be be <a href="#act:craft"><code>craft</code></a>ed from
+enabled, it can be <a href="#act:craft"><code>craft</code></a>ed from
 any other metal item or into any other metal item.</p></li>
 </ul>
 <p><strong><code>CursePotion</code></strong><span id="const:CursePotion"
@@ -1771,9 +1771,9 @@ data-label="const:Enemy"></span></p>
 <li><p>Assigned to a <a
 href="#var:relationship"><code>relationship</code></a> to indicate the
 first character regards the second negatively.</p></li>
-<li><p>The <a href="#goal:spiteful"><code>spiteful</code></a> goal is
+<li><p>The <a href="#goal:disliked"><code>disliked</code></a> goal is
 satisfied by other characters regarding a character this way.</p></li>
-<li><p>The <a href="#goal:vengeful"><code>vengeful</code></a> goal is
+<li><p>The <a href="#goal:avenged"><code>avenged</code></a> goal is
 satisfied by a character not regarding others this way, or by a
 character’s enemies being dead.</p></li>
 <li><p>The <a href="#act:arrest"><code>arrest</code></a>, <a
@@ -1808,11 +1808,11 @@ data-label="const:Friend"></span></p>
 <li><p>Assigned to a <a
 href="#var:relationship"><code>relationship</code></a> to indicate the
 first character regards the second positively.</p></li>
-<li><p>The <a href="#goal:friendly"><code>friendly</code></a> goal is
+<li><p>The <a href="#goal:obliged"><code>obliged</code></a> goal is
 satisfied by a character regarding others this way, or by a character’s
 friends becoming healthy.</p></li>
-<li><p>The <a href="#goal:kind"><code>kind</code></a> goal is satisfied
-by other characters regarding a character this way.</p></li>
+<li><p>The <a href="#goal:liked"><code>liked</code></a> goal is
+satisfied by other characters regarding a character this way.</p></li>
 <li><p>The <a href="#act:charm"><code>charm</code></a>, <a
 href="#act:give"><code>give</code></a>, <a
 href="#act:heal"><code>heal</code></a>, and <a
@@ -1915,7 +1915,7 @@ href="#var:right"><code>right</code></a> hand.</p></li>
 enabled, this <a href="#var:item"><code>item</code></a> is in every <a
 href="#loc:cave"><code>cave</code></a> by default.</p></li>
 <li><p>When <a href="#mech:Crafting"><code>Crafting</code></a> is
-enabled, it can be be <a href="#act:craft"><code>craft</code></a>ed from
+enabled, it can be <a href="#act:craft"><code>craft</code></a>ed from
 any other metal item or into any other metal item.</p></li>
 </ul>
 <p><strong><code>RaisePotion</code></strong><span id="const:RaisePotion"
@@ -1950,7 +1950,7 @@ href="#act:attack"><code>attack</code></a> others.</p></li>
 href="#act:take"><code>take</code></a> an item when the victim is <a
 href="#const:Healthy"><code>Healthy</code></a>.</p></li>
 <li><p>When <a href="#mech:Crafting"><code>Crafting</code></a> is
-enabled, it can be be <a href="#act:craft"><code>craft</code></a>ed from
+enabled, it can be <a href="#act:craft"><code>craft</code></a>ed from
 any other metal item or into any other metal item.</p></li>
 </ul>
 <p><strong><code>TeleportPotion</code></strong><span
@@ -1987,23 +1987,23 @@ arguments.</p>
 <p>For example, this character goal in YAML format says that
 <code>John</code> wants <code>John</code> to be the <a
 href="#var:monarch"><code>monarch</code></a>:</p>
-<p><code>[John, ambitious, John]</code></p>
+<p><code>[John, ruling, John]</code></p>
 <p>The first part, <code>John</code>, specifies which character has this
-goal. The rest specifies the goal <code>ambitious(John)</code>, which is
+goal. The rest specifies the goal <code>ruling(John)</code>, which is
 the objective that <code>John</code> be the <a
 href="#var:monarch"><code>monarch</code></a>. Characters can also have
 goals for other characters:</p>
-<p><code>[Sheriff, ambitious, John]</code></p>
-<p>The goal of <code>ambitious(John)</code> is the same, but it is held
-by the <code>Sheriff</code>. The <code>Sheriff</code> also wants
+<p><code>[Sheriff, ruling, John]</code></p>
+<p>The goal of <code>ruling(John)</code> is the same, but it is held by
+the <code>Sheriff</code>. The <code>Sheriff</code> also wants
 <code>John</code> to be <a
 href="#var:monarch"><code>monarch</code></a>.</p>
 <p>To make this a story goal instead of a character goal, we simply omit
 the character from the start of the sequence:</p>
-<p><code>[ambitious, John]</code></p>
-<p>This means that <code>ambitious(John)</code> is a goal for the story
-as a whole rather than any particular character. The storyteller should
-try to tell a story where <code>John</code> becomes the <a
+<p><code>[ruling, John]</code></p>
+<p>This means that <code>ruling(John)</code> is a goal for the story as
+a whole rather than any particular character. The storyteller should try
+to tell a story where <code>John</code> becomes the <a
 href="#var:monarch"><code>monarch</code></a>.</p>
 <p>Two character goals always apply and do not need to be explicitly
 listed. When <a href="#mech:Sickness"><code>Sickness</code></a> or <a
@@ -2014,32 +2014,32 @@ href="#const:Hurt"><code>Hurt</code></a> and prefer <a
 href="#const:Hurt"><code>Hurt</code></a> over <a
 href="#const:Dead"><code>Dead</code></a>. Second, if <a
 href="#mech:Undead"><code>Undead</code></a> is enabled, all <a
-href="#const:Ghost"><code>Ghost</code></a>s are <a
-href="#goal:vengeful"><code>vengeful</code></a>. This means they want to
-kill any character who is an <a
+href="#const:Ghost"><code>Ghost</code></a>s have the <a
+href="#goal:avenged"><code>avenged</code></a> goal toward themselves.
+This means they want to kill any character they regard as an <a
 href="#const:Enemy"><code>Enemy</code></a>.</p>
 <p>Goals are persistent, meaning they do not go away once they are
-achieved. For example, when a character is <a
-href="#goal:greedy"><code>greedy</code></a>, they want <a
+achieved. For example, when a character has the goal to be <a
+href="#goal:rich"><code>rich</code></a>, they want <a
 href="#const:Coin"><code>Coin</code></a>s. Once both of their hands are
 holding <a href="#const:Coin"><code>Coin</code></a>s, they cannot have
-more, but they do not stop being <a
-href="#goal:greedy"><code>greedy</code></a>. If they should ever lose
-one of their coins, they will again want more.</p>
+more, but they do not stop having the goal to be <a
+href="#goal:rich"><code>rich</code></a>. If they should ever lose one of
+their coins, they will again want more.</p>
 <p>MicroTales does not define the relative importance of one goal to
 another, and when a goal can be achieved in multiple ways, it only
-defines ordinal preferences. For example, if a character is both <a
-href="#goal:greedy"><code>greedy</code></a> and <a
-href="#goal:friendly"><code>friendly</code></a>, MicroTales does not
+defines ordinal preferences. For example, if a character wants to be
+both <a href="#goal:rich"><code>rich</code></a> and <a
+href="#goal:obliged"><code>obliged</code></a>, MicroTales does not
 specify whether it is more important to that character to have <a
 href="#const:Coin"><code>Coin</code></a>s or <a
 href="#const:Friend"><code>Friend</code></a>s; this is up to the
-storyteller. Similarly, a <a
-href="#goal:friendly"><code>friendly</code></a> character would prefer
-to have 2 <a href="#const:Friend"><code>Friend</code></a>s over 1 <a
-href="#const:Friend"><code>Friend</code></a>, but it is not necessarily
-twice as good to have 2 friends than it is to have 1. Again, this is
-left up to the storyteller.</p>
+storyteller. Similarly, a character who wants to be <a
+href="#goal:rich"><code>rich</code></a> would prefer to have 2 <a
+href="#const:Coin"><code>Coin</code></a>s over 1 <a
+href="#const:Coin"><code>Coin</code></a>, but it is not necessarily
+twice as good to have 2 than it is to have 1. Again, this is left up to
+the storyteller.</p>
 <p>MicroTales tries to avoid imposing any particular model of what makes
 a good story. Some good stories may not achieve goals, and stories that
 achieve goals are not necessarily good stories. If goals can be ignored,
@@ -2052,22 +2052,137 @@ communicated to players about what the characters want and what the
 objectives are for the story. Stories are meant to involve multiple
 active characters, so anticipating how non-player characters will act
 requires information about what they want.</p>
-<p><strong><code>ambitious (</code></strong>
+<p><strong><code>at (</code></strong> <span><em>character</em>,
+<em>location</em></span> <strong><code>)</code></strong><span
+id="goal:at" data-label="goal:at"></span></p>
+<ul>
+<li><p>Achieved when <em>character</em>’s <a
+href="#var:location"><code>location</code></a> is
+<em>location</em>.</p></li>
+</ul>
+<p><strong><code>avenged (</code></strong>
 <span><em>character</em></span> <strong><code>)</code></strong><span
-id="goal:ambitious" data-label="goal:ambitious"></span></p>
+id="goal:avenged" data-label="goal:avenged"></span></p>
+<ul>
+<li><p>Achieved by maximizing the number of other characters who
+<em>character</em> does not regard as an <a
+href="#const:Enemy"><code>Enemy</code></a> or whose <a
+href="#var:health"><code>health</code></a> is <a
+href="#const:Dead"><code>Dead</code></a>. In other words, this goal is
+achieved by maximizing the number of <em>other</em> characters for whom
+<a
+href="#var:relationship"><code>relationship</code></a><code>(character, other) </code><span
+class="math inline">≠</span><code> </code><a
+href="#const:Enemy"><code>Enemy</code></a> or <a
+href="#var:health"><code>health</code></a><code>(other) </code><span
+class="math inline">=</span><code> </code><a
+href="#const:Dead"><code>Dead</code></a>.</p></li>
+<li><p>Opposed to <a
+href="#goal:obliged"><code>obliged</code></a>.</p></li>
+<li><p>This goal improves each time <em>character</em> stops regarding
+another non-<a href="#const:Dead"><code>Dead</code></a> character as an
+<a href="#const:Enemy"><code>Enemy</code></a> or someone that
+<em>character</em> regards as an <a
+href="#const:Enemy"><code>Enemy</code></a> becomes <a
+href="#const:Dead"><code>Dead</code></a>. Relationships can improve via
+the <a href="#act:charm"><code>charm</code></a>, <a
+href="#act:give"><code>give</code></a>, <a
+href="#act:heal"><code>heal</code></a>, or <a
+href="#act:release"><code>release</code></a> actions. Characters can die
+via the <a href="#act:attack"><code>attack</code></a>, <a
+href="#act:curse"><code>curse</code></a>, and <a
+href="#act:die"><code>die</code></a> actions.</p></li>
+<li><p>This goal worsens each time <em>character</em> regards another
+non-<a href="#const:Dead"><code>Dead</code></a> character as an <a
+href="#const:Enemy"><code>Enemy</code></a> or someone that
+<em>character</em> regards as an <a
+href="#const:Enemy"><code>Enemy</code></a> stop being <a
+href="#const:Dead"><code>Dead</code></a>. Relationships can degrade via
+the <a href="#act:arrest"><code>arrest</code></a>, <a
+href="#act:attack"><code>attack</code></a>, <a
+href="#act:banish"><code>banish</code></a>, <a
+href="#act:curse"><code>curse</code></a>, and <a
+href="#act:take"><code>take</code></a> actions. Characters can stop
+being <a href="#const:Dead"><code>Dead</code></a> via the <a
+href="#act:raise"><code>raise</code></a> and <a
+href="#act:rise"><code>rise</code></a> actions.</p></li>
+</ul>
+<p><strong><code>disliked (</code></strong>
+<span><em>character</em></span> <strong><code>)</code></strong><span
+id="goal:disliked" data-label="goal:disliked"></span></p>
+<ul>
+<li><p>Achieved by maximizing the number of other characters who regard
+<em>character</em> as an <a href="#const:Enemy"><code>Enemy</code></a>.
+In other words, this goal is achieved by maximizing the number of
+<em>other</em> characters for whom <a
+href="#var:relationship"><code>relationship</code></a><code>(other, character) = </code><a
+href="#const:Enemy"><code>Enemy</code></a>.</p></li>
+<li><p>Opposed to <a href="#goal:liked"><code>liked</code></a>.</p></li>
+<li><p>This goal improves each time an additional other character
+regards <em>character</em> an <a
+href="#const:Enemy"><code>Enemy</code></a>. Relationships can degrade
+via the <a href="#act:arrest"><code>arrest</code></a>, <a
+href="#act:attack"><code>attack</code></a>, <a
+href="#act:banish"><code>banish</code></a>, <a
+href="#act:curse"><code>curse</code></a>, and <a
+href="#act:take"><code>take</code></a> actions.</p></li>
+<li><p>This goal worsens each time another character stops regarding
+<em>character</em> as an <a href="#const:Enemy"><code>Enemy</code></a>.
+Relationships can improve via the <a
+href="#act:charm"><code>charm</code></a>, <a
+href="#act:give"><code>give</code></a>, <a
+href="#act:heal"><code>heal</code></a>, or <a
+href="#act:release"><code>release</code></a> actions.</p></li>
+</ul>
+<p><strong><code>harmed (</code></strong>
+<span><em>character</em></span> <strong><code>)</code></strong><span
+id="goal:harmed" data-label="goal:harmed"></span></p>
 <ul>
 <li><p>Only available when <a
-href="#mech:Monarchy"><code>Monarchy</code></a> is enabled.</p></li>
-<li><p>Achieved when <em>character</em> is the <a
-href="#var:monarch"><code>monarch</code></a>.</p></li>
-<li><p>When <a href="#mech:Marriage"><code>Marriage</code></a> is
-enabled, this goal is also achieved when <em>character</em>’s <a
-href="#var:spouse"><code>spouse</code></a> is the <a
-href="#var:monarch"><code>monarch</code></a>.</p></li>
+href="#mech:Sickness"><code>Sickness</code></a> or <a
+href="#mech:Violence"><code>Violence</code></a> is enabled.</p></li>
+<li><p>Achieved when <em>character</em>’s <a
+href="#var:health"><code>health</code></a> is not <a
+href="#const:Healthy"><code>Healthy</code></a>.</p></li>
+<li><p>Opposed to <a
+href="#goal:unharmed"><code>unharmed</code></a>.</p></li>
 </ul>
-<p><strong><code>chaotic (</code></strong>
-<strong><code>)</code></strong><span id="goal:chaotic"
-data-label="goal:chaotic"></span></p>
+<p><strong><code>lawful (</code></strong>
+<strong><code>)</code></strong><span id="goal:lawful"
+data-label="goal:lawful"></span></p>
+<ul>
+<li><p>Only available when <a href="#mech:Crime"><code>Crime</code></a>
+is enabled.</p></li>
+<li><p>Achieved by maximizing the number of characters who are not <a
+href="#var:criminal"><code>criminal</code></a>s or who are <a
+href="#var:criminal"><code>criminal</code></a>s but are <a
+href="#const:Dead"><code>Dead</code></a> or in a <a
+href="#loc:jail"><code>jail</code></a>.</p></li>
+<li><p>Opposed to <a
+href="#goal:lawless"><code>lawless</code></a>.</p></li>
+<li><p>This goal improves each time an additional character meets the
+above requirements. This can happen when the <a
+href="#act:forgive"><code>forgive</code></a> or <a
+href="#act:repent"><code>repent</code></a> actions make the character no
+longer a criminal, when a criminal moves to a <a
+href="#loc:jail"><code>jail</code></a>, or when a criminal
+dies.</p></li>
+<li><p>This goal worsens each time a character stops meeting the above
+requirements. Typically this happens when a living free character
+commits a crime (potential crimes include the <a
+href="#act:arrest"><code>arrest</code></a>, <a
+href="#act:attack"><code>attack</code></a>, <a
+href="#act:curse"><code>curse</code></a>, <a
+href="#act:release"><code>release</code></a>, and <a
+href="#act:take"><code>take</code></a> actions), but it can also happen
+when a criminal leaves a <a href="#loc:jail"><code>jail</code></a> or
+returns from the dead via the <a
+href="#act:raise"><code>raise</code></a> or <a
+href="#act:rise"><code>rise</code></a> actions.</p></li>
+</ul>
+<p><strong><code>lawless (</code></strong>
+<strong><code>)</code></strong><span id="goal:lawless"
+data-label="goal:lawless"></span></p>
 <ul>
 <li><p>Only available when <a href="#mech:Crime"><code>Crime</code></a>
 is enabled.</p></li>
@@ -2109,9 +2224,37 @@ the <a href="#act:attack"><code>attack</code></a>, <a
 href="#act:curse"><code>curse</code></a>, and <a
 href="#act:die"><code>die</code></a> actions.</p></li>
 </ul>
-<p><strong><code>friendly (</code></strong>
+<p><strong><code>liked (</code></strong> <span><em>character</em></span>
+<strong><code>)</code></strong><span id="goal:liked"
+data-label="goal:liked"></span></p>
+<ul>
+<li><p>Achieved by maximizing the number of other characters who regard
+<em>character</em> as a <a href="#const:Friend"><code>Friend</code></a>.
+In other words, this goal is achieved by maximizing the number of
+<em>other</em> characters for whom <a
+href="#var:relationship"><code>relationship</code></a><code>(other, character) = </code><a
+href="#const:Friend"><code>Friend</code></a>.</p></li>
+<li><p>Opposed to <a
+href="#goal:disliked"><code>disliked</code></a>.</p></li>
+<li><p>This goal improves each time an additional other character
+regards <em>character</em> a <a
+href="#const:Friend"><code>Friend</code></a>. Relationships can improve
+via the <a href="#act:charm"><code>charm</code></a>, <a
+href="#act:give"><code>give</code></a>, <a
+href="#act:heal"><code>heal</code></a>, or <a
+href="#act:release"><code>release</code></a> actions.</p></li>
+<li><p>This goal worsens each time another character stops regarding
+<em>character</em> as a <a href="#const:Friend"><code>Friend</code></a>.
+Relationships can degrade via the <a
+href="#act:arrest"><code>arrest</code></a>, <a
+href="#act:attack"><code>attack</code></a>, <a
+href="#act:banish"><code>banish</code></a>, <a
+href="#act:curse"><code>curse</code></a>, and <a
+href="#act:take"><code>take</code></a> actions.</p></li>
+</ul>
+<p><strong><code>obliged (</code></strong>
 <span><em>character</em></span> <strong><code>)</code></strong><span
-id="goal:friendly" data-label="goal:friendly"></span></p>
+id="goal:obliged" data-label="goal:obliged"></span></p>
 <ul>
 <li><p>Achieved by maximizing the number of other characters who
 <em>character</em> regards as a <a
@@ -2125,7 +2268,7 @@ href="#const:Friend"><code>Friend</code></a> and <a
 href="#var:health"><code>health</code></a><code>(other) = </code><a
 href="#const:Healthy"><code>Healthy</code></a>.</p></li>
 <li><p>Opposed to <a
-href="#goal:vengeful"><code>vengeful</code></a>.</p></li>
+href="#goal:avenged"><code>avenged</code></a>.</p></li>
 <li><p>This goal improves each time <em>character</em> regards a new <a
 href="#const:Healthy"><code>Healthy</code></a> character as a <a
 href="#const:Friend"><code>Friend</code></a> or someone
@@ -2155,9 +2298,9 @@ href="#act:attack"><code>attack</code></a>, <a
 href="#act:curse"><code>curse</code></a>, and <a
 href="#act:sicken"><code>sicken</code></a> actions.</p></li>
 </ul>
-<p><strong><code>greedy (</code></strong>
-<span><em>character</em></span> <strong><code>)</code></strong><span
-id="goal:greedy" data-label="goal:greedy"></span></p>
+<p><strong><code>rich (</code></strong> <span><em>character</em></span>
+<strong><code>)</code></strong><span id="goal:rich"
+data-label="goal:rich"></span></p>
 <ul>
 <li><p>Only available when <a
 href="#mech:Commerce"><code>Commerce</code></a> or <a
@@ -2166,91 +2309,22 @@ href="#mech:Theft"><code>Theft</code></a> is enabled.</p></li>
 href="#const:Coin"><code>Coin</code></a> items <em>character</em> is
 holding.</p></li>
 </ul>
-<p><strong><code>hateful (</code></strong>
+<p><strong><code>ruling (</code></strong>
 <span><em>character</em></span> <strong><code>)</code></strong><span
-id="goal:hateful" data-label="goal:hateful"></span></p>
+id="goal:ruling" data-label="goal:ruling"></span></p>
 <ul>
 <li><p>Only available when <a
-href="#mech:Sickness"><code>Sickness</code></a> or <a
-href="#mech:Violence"><code>Violence</code></a> is enabled.</p></li>
-<li><p>Achieved when <em>character</em>’s <a
-href="#var:health"><code>health</code></a> is not <a
-href="#const:Healthy"><code>Healthy</code></a>.</p></li>
-<li><p>Opposed to <a
-href="#goal:loving"><code>loving</code></a>.</p></li>
+href="#mech:Monarchy"><code>Monarchy</code></a> is enabled.</p></li>
+<li><p>Achieved when <em>character</em> is the <a
+href="#var:monarch"><code>monarch</code></a>.</p></li>
+<li><p>When <a href="#mech:Marriage"><code>Marriage</code></a> is
+enabled, this goal is also achieved when <em>character</em>’s <a
+href="#var:spouse"><code>spouse</code></a> is the <a
+href="#var:monarch"><code>monarch</code></a>.</p></li>
 </ul>
-<p><strong><code>homesick (</code></strong> <span><em>character</em>,
-<em>location</em></span> <strong><code>)</code></strong><span
-id="goal:homesick" data-label="goal:homesick"></span></p>
-<ul>
-<li><p>Achieved when <em>character</em>’s <a
-href="#var:location"><code>location</code></a> is
-<em>location</em>.</p></li>
-</ul>
-<p><strong><code>kind (</code></strong> <span><em>character</em></span>
-<strong><code>)</code></strong><span id="goal:kind"
-data-label="goal:kind"></span></p>
-<ul>
-<li><p>Achieved by maximizing the number of other characters who regard
-<em>character</em> as a <a href="#const:Friend"><code>Friend</code></a>.
-In other words, this goal is achieved by maximizing the number of
-<em>other</em> characters for whom <a
-href="#var:relationship"><code>relationship</code></a><code>(other, character) = </code><a
-href="#const:Friend"><code>Friend</code></a>.</p></li>
-<li><p>Opposed to <a
-href="#goal:spiteful"><code>spiteful</code></a>.</p></li>
-<li><p>This goal improves each time an additional other character
-regards <em>character</em> a <a
-href="#const:Friend"><code>Friend</code></a>. Relationships can improve
-via the <a href="#act:charm"><code>charm</code></a>, <a
-href="#act:give"><code>give</code></a>, <a
-href="#act:heal"><code>heal</code></a>, or <a
-href="#act:release"><code>release</code></a> actions.</p></li>
-<li><p>This goal worsens each time another character stops regarding
-<em>character</em> as a <a href="#const:Friend"><code>Friend</code></a>.
-Relationships can degrade via the <a
-href="#act:arrest"><code>arrest</code></a>, <a
-href="#act:attack"><code>attack</code></a>, <a
-href="#act:banish"><code>banish</code></a>, <a
-href="#act:curse"><code>curse</code></a>, and <a
-href="#act:take"><code>take</code></a> actions.</p></li>
-</ul>
-<p><strong><code>lawful (</code></strong>
-<strong><code>)</code></strong><span id="goal:lawful"
-data-label="goal:lawful"></span></p>
-<ul>
-<li><p>Only available when <a href="#mech:Crime"><code>Crime</code></a>
-is enabled.</p></li>
-<li><p>Achieved by maximizing the number of characters who are not <a
-href="#var:criminal"><code>criminal</code></a>s or who are <a
-href="#var:criminal"><code>criminal</code></a>s but are <a
-href="#const:Dead"><code>Dead</code></a> or in a <a
-href="#loc:jail"><code>jail</code></a>.</p></li>
-<li><p>Opposed to <a
-href="#goal:chaotic"><code>chaotic</code></a>.</p></li>
-<li><p>This goal improves each time an additional character meets the
-above requirements. This can happen when the <a
-href="#act:forgive"><code>forgive</code></a> or <a
-href="#act:repent"><code>repent</code></a> actions make the character no
-longer a criminal, when a criminal moves to a <a
-href="#loc:jail"><code>jail</code></a>, or when a criminal
-dies.</p></li>
-<li><p>This goal worsens each time a character stops meeting the above
-requirements. Typically this happens when a living free character
-commits a crime (potential crimes include the <a
-href="#act:arrest"><code>arrest</code></a>, <a
-href="#act:attack"><code>attack</code></a>, <a
-href="#act:curse"><code>curse</code></a>, <a
-href="#act:release"><code>release</code></a>, and <a
-href="#act:take"><code>take</code></a> actions), but it can also happen
-when a criminal leaves a <a href="#loc:jail"><code>jail</code></a> or
-returns from the dead via the <a
-href="#act:raise"><code>raise</code></a> or <a
-href="#act:rise"><code>rise</code></a> actions.</p></li>
-</ul>
-<p><strong><code>loving (</code></strong>
+<p><strong><code>unharmed (</code></strong>
 <span><em>character</em></span> <strong><code>)</code></strong><span
-id="goal:loving" data-label="goal:loving"></span></p>
+id="goal:unharmed" data-label="goal:unharmed"></span></p>
 <ul>
 <li><p>Only available when <a
 href="#mech:Sickness"><code>Sickness</code></a> or <a
@@ -2259,90 +2333,16 @@ href="#mech:Violence"><code>Violence</code></a> is enabled.</p></li>
 href="#var:health"><code>health</code></a> is <a
 href="#const:Healthy"><code>Healthy</code></a>.</p></li>
 <li><p>Opposed to <a
-href="#goal:hateful"><code>hateful</code></a>.</p></li>
+href="#goal:harmed"><code>harmed</code></a>.</p></li>
 </ul>
-<p><strong><code>smitten (</code></strong> <span><em>character</em>,
+<p><strong><code>wed (</code></strong> <span><em>character</em>,
 <em>spouse</em></span> <strong><code>)</code></strong><span
-id="goal:smitten" data-label="goal:smitten"></span></p>
+id="goal:wed" data-label="goal:wed"></span></p>
 <ul>
 <li><p>Only available when <a
 href="#mech:Marriage"><code>Marriage</code></a> is enabled.</p></li>
 <li><p>Achieved when <em>character</em>’s <a
 href="#var:spouse"><code>spouse</code></a> is <em>spouse</em>.</p></li>
-</ul>
-<p><strong><code>spiteful (</code></strong>
-<span><em>character</em></span> <strong><code>)</code></strong><span
-id="goal:spiteful" data-label="goal:spiteful"></span></p>
-<ul>
-<li><p>Achieved by maximizing the number of other characters who regard
-<em>character</em> as an <a href="#const:Enemy"><code>Enemy</code></a>.
-In other words, this goal is achieved by maximizing the number of
-<em>other</em> characters for whom <a
-href="#var:relationship"><code>relationship</code></a><code>(other, character) = </code><a
-href="#const:Enemy"><code>Enemy</code></a>.</p></li>
-<li><p>Opposed to <a href="#goal:kind"><code>kind</code></a>.</p></li>
-<li><p>This goal improves each time an additional other character
-regards <em>character</em> an <a
-href="#const:Enemy"><code>Enemy</code></a>. Relationships can degrade
-via the <a href="#act:arrest"><code>arrest</code></a>, <a
-href="#act:attack"><code>attack</code></a>, <a
-href="#act:banish"><code>banish</code></a>, <a
-href="#act:curse"><code>curse</code></a>, and <a
-href="#act:take"><code>take</code></a> actions.</p></li>
-<li><p>This goal worsens each time another character stops regarding
-<em>character</em> as an <a href="#const:Enemy"><code>Enemy</code></a>.
-Relationships can improve via the <a
-href="#act:charm"><code>charm</code></a>, <a
-href="#act:give"><code>give</code></a>, <a
-href="#act:heal"><code>heal</code></a>, or <a
-href="#act:release"><code>release</code></a> actions.</p></li>
-</ul>
-<p><strong><code>vengeful (</code></strong>
-<span><em>character</em></span> <strong><code>)</code></strong><span
-id="goal:vengeful" data-label="goal:vengeful"></span></p>
-<ul>
-<li><p>Achieved by maximizing the number of other characters who
-<em>character</em> does not regard as an <a
-href="#const:Enemy"><code>Enemy</code></a> or whose <a
-href="#var:health"><code>health</code></a> is <a
-href="#const:Dead"><code>Dead</code></a>. In other words, this goal is
-achieved by maximizing the number of <em>other</em> characters for whom
-<a
-href="#var:relationship"><code>relationship</code></a><code>(character, other) </code><span
-class="math inline">≠</span><code> </code><a
-href="#const:Enemy"><code>Enemy</code></a> or <a
-href="#var:health"><code>health</code></a><code>(other) </code><span
-class="math inline">=</span><code> </code><a
-href="#const:Dead"><code>Dead</code></a>.</p></li>
-<li><p>Opposed to <a
-href="#goal:friendly"><code>friendly</code></a>.</p></li>
-<li><p>This goal improves each time <em>character</em> stops regarding
-another non-<a href="#const:Dead"><code>Dead</code></a> character as an
-<a href="#const:Enemy"><code>Enemy</code></a> or someone that
-<em>character</em> regards as an <a
-href="#const:Enemy"><code>Enemy</code></a> becomes <a
-href="#const:Dead"><code>Dead</code></a>. Relationships can improve via
-the <a href="#act:charm"><code>charm</code></a>, <a
-href="#act:give"><code>give</code></a>, <a
-href="#act:heal"><code>heal</code></a>, or <a
-href="#act:release"><code>release</code></a> actions. Characters can die
-via the <a href="#act:attack"><code>attack</code></a>, <a
-href="#act:curse"><code>curse</code></a>, and <a
-href="#act:die"><code>die</code></a> actions.</p></li>
-<li><p>This goal worsens each time <em>character</em> regards another
-non-<a href="#const:Dead"><code>Dead</code></a> character as an <a
-href="#const:Enemy"><code>Enemy</code></a> or someone that
-<em>character</em> regards as an <a
-href="#const:Enemy"><code>Enemy</code></a> stop being <a
-href="#const:Dead"><code>Dead</code></a>. Relationships can degrade via
-the <a href="#act:arrest"><code>arrest</code></a>, <a
-href="#act:attack"><code>attack</code></a>, <a
-href="#act:banish"><code>banish</code></a>, <a
-href="#act:curse"><code>curse</code></a>, and <a
-href="#act:take"><code>take</code></a> actions. Characters can stop
-being <a href="#const:Dead"><code>Dead</code></a> via the <a
-href="#act:raise"><code>raise</code></a> and <a
-href="#act:rise"><code>rise</code></a> actions.</p></li>
 </ul>
 <h2 id="sec:actions">Actions</h2>
 <p>Actions are events that happen in a story. An action has
@@ -2363,9 +2363,9 @@ parameters are given in parentheses after the name.</p>
 <p>An action’s preconditions are meant as minimal restrictions for an
 action to seem believable based on the world state. Action preconditions
 do not attempt to restrict when an action makes narrative sense. For
-example, it probably does not make narrative sense for a <a
-href="#goal:greedy"><code>greedy</code></a> character to <a
-href="#act:give"><code>give</code></a> away a <a
+example, it probably does not make narrative sense for a character who
+wants to be <a href="#goal:rich"><code>rich</code></a> to <a
+href="#act:give"><code>give</code></a> away their <a
 href="#const:Coin"><code>Coin</code></a>, but MicroTales does not
 prevent this because one purpose of MicroTales is to study different
 models of when actions make sense. Ideally, a character’s actions are
