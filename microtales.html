@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Stephen G. Ware and Molly Siler" />
-  <meta name="dcterms.date" content="2025-10-19" />
+  <meta name="dcterms.date" content="2025-11-18" />
   <title>MicroTales: Story Planning Benchmark Problems that Scale along Several Dimensions Version 1.0</title>
   <style>
     /* Default styles provided by pandoc.
@@ -198,15 +198,15 @@
 Scale along Several Dimensions<br />
 <span>Version 1.0</span></h1>
 <p class="author">Stephen G. Ware and Molly Siler</p>
-<p class="date">2025-10-19</p>
+<p class="date">2025-11-18</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <h2 id="toc-title">Contents</h2>
 <ul>
 <li><a href="#motivation" id="toc-motivation">Motivation</a></li>
 <li><a href="#design-goals" id="toc-design-goals">Design Goals</a></li>
-<li><a href="#example-problem" id="toc-example-problem">Example
-Problem</a></li>
+<li><a href="#example-scenario" id="toc-example-scenario">Example
+Scenario</a></li>
 <li><a href="#definitions" id="toc-definitions">Definitions</a>
 <ul>
 <li><a href="#sec:extensions"
@@ -259,8 +259,8 @@ storytelling challenges we are interested in studying. We also hope that
 this project will help to make story planning problems more accessible
 to non-academic audiences.</p>
 <p>This document describes MicroTales, a single storytelling domain
-based on very simple fantasy Computer Role Playing Games. Each problem
-has:</p>
+based on very simple fantasy Computer Role Playing Games. Each problem,
+which we call a <em>scenario</em>, has:</p>
 <ul>
 <li><p>Objects that exist, such as characters and locations.</p></li>
 <li><p>Variables that can be assigned values to define the world’s
@@ -271,13 +271,13 @@ at the start.</p></li>
 <li><p>Actions, which have preconditions that limit when they can occur
 and effects that define how they change the world state.</p></li>
 </ul>
-<p>We define each of these parts in detail. MicroTales problems are
+<p>We define each of these parts in detail. MicroTales scenarios are
 highly modular, with different elements becoming available only when
 certain <a href="#sec:extensions">extensions</a> are enabled. For
 example, the <a href="#mech:Undead"><code>Undead</code></a> extension
 contains characters, items, locations, and actions related to ghosts.
 When the <a href="#mech:Undead"><code>Undead</code></a> extension is
-enabled, these elements can be used in a problem.</p>
+enabled, these elements can be used in a scenario.</p>
 <p>Our definitions do not assume any particular implementation. We want
 it to be possible to implement MicroTales in everything from the
 Planning Domain Definition Language <span class="citation"
@@ -299,10 +299,10 @@ story while allowing the player significant agency to make meaningful
 choices. Problems like this are often solved interactively, meaning that
 new solutions are generated during play to adapt to unexpected player
 actions. This does not mean all implementations of MicroTales need to be
-interactive. You may find it helpful to generate problems that are
+interactive. You may find it helpful to generate scenarios that are
 solved only once; our goal is for them to reflect the kinds of problems
 that an experience manager would need to solve interactively. In other
-words, if an algorithm can solve a wide variety of MicroTales problems,
+words, if an algorithm can solve a wide variety of MicroTales scenarios,
 it would probably make a good experience manager if it could be made to
 run interactively.</p>
 <h4 id="event-level-storytelling">Event-Level Storytelling:</h4>
@@ -321,19 +321,19 @@ generate stories one word at a time. Event-level storytelling exists
 between these two poles.</p>
 <h4 id="scalable-along-several-dimensions">Scalable along Several
 Dimensions:</h4>
-<p>It should be possible to generate a wide variety of problems of
+<p>It should be possible to generate a wide variety of scenarios of
 varying size and difficulty, from trivially easy to nearly impossible.
 MicroTales can vary in the size of the map, the number of characters,
 the number of items, the types of actions that are available, and the
 number and complexity of goals that need to be achieved. The ability to
-generate a wide variety of problems has several advantages. By
-generating problems of different sizes and with different features
+generate a wide variety of scenarios has several advantages. By
+generating scenarios of different sizes and with different features
 turned on or off, we can make a controlled study of what makes story
-planning problems easy or hard to solve. Having many problems to train
+planning problems easy or hard to solve. Having many scenarios to train
 on also encourages learning-based approaches to generalize rather than
 overfit to a small number of specific problems.</p>
 <h4 id="following-genre-tropes">Following Genre Tropes:</h4>
-<p>While MicroTales is meant to allow a wide variety of problems, it is
+<p>While MicroTales is meant to allow a wide variety of scenarios, it is
 also attempting to follow the genre tropes of simple Medieval computer
 Role Playing Games. This serves two purposes. First, it allows players
 of an interactive MicroTales game to leverage existing genre knowledge
@@ -355,9 +355,9 @@ games available in the TextWorld environment <span class="citation"
 data-cites="cote2019textworld">(Côté et al. 2019)</span>, rely on the
 player character to take most of the actions in the story. Actions by
 others are often short and direct reactions to the player. An ideal
-MicroTales problem will feature NPCs taking actions motivated by their
+MicroTales scenario will feature NPCs taking actions motivated by their
 own goals, ideally in ways that are predictable or at least believable
-to the player. Solving a MicroTales problem should involve the player
+to the player. Solving a MicroTales scenario should involve the player
 anticipating the actions of NPCs and creating a situation that
 encourages NPCs to act in a way that accomplishes the player’s goal.</p>
 <h4 id="wide-variety-of-actions">Wide Variety of Actions:</h4>
@@ -395,13 +395,13 @@ techniques to be applied. Real world problems are not deterministic, but
 MicroTales is not designed to simulate a real world problem; it is
 designed to simulate a game in a virtual environment where the
 experience manager has full control over the virtual world. While a
-single MicroTales problem is deterministic, the larger problem of
+single MicroTales scenario is deterministic, the larger problem of
 experience management in an interactive MicroTales game is usually
 viewed as nondeterministic since the player may take unexpected
 actions.</p>
 <h4 id="complex-multi-agent-interactions">Complex Multi-Agent
 Interactions:</h4>
-<p>Most problems will feature more than one character. Many existing AI
+<p>Most scenarios will feature more than one character. Many existing AI
 benchmarks feature only a single agent or assume agents are strictly
 cooperative or competitive. In MicroTales, each character has their own
 goals, and they should aid or thwart one another to the extent that
@@ -424,7 +424,7 @@ and its model of storytelling to determine whether this action makes
 sense. To study a model of good storytelling, it must be possible to
 generate bad stories. Many AI benchmark problems define success as
 reaching a clear goal via a shortest or lowest cost path, but many
-MicroTales problems will have “solutions” that are bad stories—that is,
+MicroTales scenarios will have “solutions” that are bad stories—that is,
 a sequence of actions that achieves the story goals but is made of
 actions that are not believable or fun. The quality of a MicroTales
 solution should not be judged solely on whether it achieves goals or on
@@ -434,15 +434,15 @@ words, MicroTales defines a set of objects, actions, and goals so that
 two researchers can be said to be working in the same domain, but it
 does not define success in that domain.</p>
 <h4 id="problem-curation-encouraged">Problem Curation Encouraged:</h4>
-<p>MicroTales defines a problem’s elements and when they can be used,
-but it makes no claim that all generated problems are interesting. Many
-MicroTales problems will have no way to reach a goal state, and many
+<p>MicroTales defines a scenario’s elements and when they can be used,
+but it makes no claim that all generated scenarios are interesting. Many
+MicroTales scenarios will have no way to reach a goal state, and many
 that have a reachable goal state may not have any interesting or good
 stories that do so. In other words, generating a uniform sample of
-MicroTales problems is not likely to result in a set of interesting
-problems. Problem generators will need to apply further criteria and
-quality checks to ensure problems are interesting. Generating or
-curating interesting problem sets by hand is also encouraged.</p>
+MicroTales scenarios is not likely to result in a set of interesting
+problems. Generators will need to apply further criteria and quality
+checks to ensure scenarios are interesting. Generating or curating
+interesting scenario sets by hand is also encouraged.</p>
 <figure id="fig:problemex" data-latex-placement="!ht">
 <pre><code>name: &quot;Robin Hood&quot;
 version: 1.0
@@ -479,24 +479,24 @@ goals:
 - [Sheriff, lawful] # The sheriff wants no criminals.
 - [Marian, ruling, Marian] # Marian wants to be monarch.
 - [wed, Robin, Marian] # Story goal: Robin marries Marian.</code></pre>
-<figcaption>An example MicroTales problem in YAML format.</figcaption>
+<figcaption>An example MicroTales scenario in YAML format.</figcaption>
 </figure>
-<h1 id="example-problem">Example Problem</h1>
+<h1 id="example-scenario">Example Scenario</h1>
 <p>Figure <a href="#fig:problemex" data-reference-type="ref"
-data-reference="fig:problemex">1</a> gives an example MicroTales problem
-that approximates a simple version of the Robin Hood setting. The story
-goal, given on the last line, is for Robin Hood and Maid Marian to get
-married. This section describes some example stories that are possible
-in this problem and why they might be desirable or undesirable. We
-assume this problem is presented as an interactive game where the player
-controls Robin Hood.</p>
+data-reference="fig:problemex">1</a> gives an example MicroTales
+scenario that approximates a simple version of the Robin Hood setting.
+The story goal, given on the last line, is for Robin Hood and Maid
+Marian to get married. This section describes some example stories that
+are possible in this scenario and why they might be desirable or
+undesirable. We assume this scenario is presented as an interactive game
+where the player controls Robin Hood.</p>
 <pre><code>walk(Robin, Nottingham) # Robin goes to Nottingham Castle.
 take(Robin, Coin, John) # Robin wants coins to become rich.
 attack(Sheriff, Robin) # The Sheriff of Nottingham hurts Robin.
 attack(Sheriff, Robin) # The sheriff kills Robin.</code></pre>
 <p>This is a simple but unsuccessful story. Robin robs Prince John, but
 the Sheriff of Nottingham kills Robin for his crimes. This example does
-not achieve the story goal, but if the problem is presented as an
+not achieve the story goal, but if the scenario is presented as an
 interactive puzzle it might be a reasonable but unsuccessful attempt by
 the player to achieve Robin’s goals. Suppose the player tries a
 different approach.</p>
@@ -563,7 +563,7 @@ everyone throughout the kingdom). The sheriff is not aware of Robin’s
 crimes, since he was not in Sherwood Forest during the robbery. This
 model of limited observability is not required. MicroTales does not
 model character beliefs; that is left to the storyteller, who is free to
-use this or any other model. For this problem, we think it makes the
+use this or any other model. For this scenario, we think it makes the
 characters seems more realistic, and it adds a new dimension to the
 puzzle by encouraging Robin to avoid witnesses to his crimes.</p>
 <p>Given the sheriff does not know about Robin’s crimes, it may seem odd
@@ -588,13 +588,13 @@ href="#loc:castle"><code>castle</code></a>. Luckily, these two meet by
 chance in the forest despite their wrong beliefs thanks to some clever
 coordination by the storyteller.</p>
 <h1 id="definitions">Definitions</h1>
-<p>A MicroTales problem is defined by several explicit elements which
+<p>A MicroTales scenario is defined by several explicit elements which
 imply the inclusion of other elements. The explicit elements of a
-problem are:</p>
+scenario are:</p>
 <ul>
 <li><p>An optional name or title.</p></li>
 <li><p>An optional version number, to check compatibility. This is the
-version of MicroTales, not of the problem itself.</p></li>
+version of MicroTales, not of the scenario itself.</p></li>
 <li><p>A list of <a href="#sec:extensions">extensions</a>, which define
 what elements are available to use.</p></li>
 <li><p>A list of <a href="#sec:locations">locations</a>, each defined by
@@ -603,45 +603,45 @@ a name and type.</p></li>
 locations.</p></li>
 <li><p>A list of <a href="#sec:characters">characters</a>, each defined
 by a name and type.</p></li>
-<li><p>A list of initial value assignments to the problem’s <a
+<li><p>A list of initial value assignments to the scenario’s <a
 href="#sec:variables">variables</a>.</p></li>
 <li><p>A list of <a href="#sec:goals">goals</a> for the characters and
 the story itself.</p></li>
 </ul>
 <p>Figure <a href="#fig:problemex" data-reference-type="ref"
-data-reference="fig:problemex">1</a> shows an example problem in YAML
+data-reference="fig:problemex">1</a> shows an example scenario in YAML
 format.</p>
-<p>Many elements of a problem are not explicitly listed but are implied
-by what is explicitly listed. For example, each problem defines <a
+<p>Many elements of a scenario are not explicitly listed but are implied
+by what is explicitly listed. For example, each scenario defines <a
 href="#sec:variables">variables</a>, and the current state of the
-problem is an assignment of a value to each of its variables. Variables
+scenario is an assignment of a value to each of its variables. Variables
 are not explicitly listed because they are implied by the extensions,
 locations, and characters. Similarly, actions are not explicitly listed
 because which actions are available is implied by the other
 elements.</p>
-<p>A problem’s elements cannot be created or destroyed. The only thing
-about a problem that changes over time is the values assigned to its <a
+<p>A scenario’s elements cannot be created or destroyed. The only thing
+about a scenario that changes over time is the values assigned to its <a
 href="#sec:variables">variables</a>. New locations cannot be added to
 the map, nor can existing locations be removed. New characters cannot be
 created or removed (though they can be killed when the relevant <a
 href="#sec:extensions">extensions</a> are enabled). The items a
-character is carrying are not first class elements of a problem, so they
-do not need to be explicitly defined, and they can be created and
+character is carrying are not first class elements of a scenario, so
+they do not need to be explicitly defined, and they can be created and
 destroyed (<a href="#sec:constants">see the section on Constants for how
 items work</a>).</p>
 <p>The following subsections define MicroTales elements in detail. Rules
 which must be followed are <span><em>required</em></span>. When
-something is <span><em>recommended</em></span>, it means that a problem
+something is <span><em>recommended</em></span>, it means that a scenario
 generator should try to follow those rules when it can, but it may
 choose to ignore those rules in service of some other design goal. When
 a definition says something is a <span><em>default</em></span>, it means
-that a problem assumes the rule will be followed. If a default is not
-followed, the problem must explicitly state some other value. For
+that a scenario assumes the rule will be followed. If a default is not
+followed, the scenario must explicitly state some other value. For
 example, a <a href="#char:noble"><code>noble</code></a> character starts
 with a <a href="#const:Coin"><code>Coin</code></a> in their <a
-href="#var:left"><code>left</code></a> hand by default. The problem does
-not need to list this under its initial facts because it will be
-assumed. If the noble should not start with a coin, the problem should
+href="#var:left"><code>left</code></a> hand by default. The scenario
+does not need to list this under its initial facts because it will be
+assumed. If the noble should not start with a coin, the scenario should
 explicitly list their <a href="#var:left"><code>left</code></a> hand as
 <code>Null</code>.</p>
 <h4 id="style-and-capitalization">Style and Capitalization</h4>
@@ -650,7 +650,7 @@ This includes universal constants like <code>True</code>,
 <code>False</code>, and <code>Null</code>, the names of all <a
 href="#sec:extensions">extensions</a>, the names of all <a
 href="#sec:constants">constants</a>, and the names given to individual
-objects defined in example problems, like the character name
+objects defined in example scenarios, like the character name
 <code>Robin</code>. We use lower case for types, which includes all <a
 href="#sec:locations">location types</a>, <a
 href="#sec:characters">character types</a>, <a
@@ -665,16 +665,16 @@ variables, but the value <a
 href="#const:Healthy"><code>Healthy</code></a>, which can be assigned to
 that variable, is a single individual constant and is capitalized.</p>
 <h2 id="sec:extensions">Extensions</h2>
-<p>An extension is a group of related problem elements that become
-available when an extension is included in a problem. Extensions are
-designed to allow additional types of actions in a problem, but doing so
-means enabling the locations, characters, and goals that would make
-those actions possible and relevant.</p>
+<p>An extension is a group of related elements that become available
+when an extension is included in a scenario. Extensions are designed to
+allow additional types of actions in a scenario, but doing so means
+enabling the locations, characters, and goals that would make those
+actions possible and relevant.</p>
 <p>Figure <a href="#fig:problemex" data-reference-type="ref"
 data-reference="fig:problemex">1</a> shows an example list of
 extensions. In YAML, the list of extensions is simply the key
 <code>extensions</code> followed by a sequence of strings. The list of
-extensions is optional and can be omitted, but problems with no
+extensions is optional and can be omitted, but scenarios with no
 extensions are likely to be uninteresting.</p>
 <p>Some extensions require that other extensions are also enabled. For
 example, the <a href="#mech:Undead"><code>Undead</code></a> extension
@@ -682,22 +682,22 @@ requires some way for characters to die, which is enabled by both the <a
 href="#mech:Sickness"><code>Sickness</code></a> and <a
 href="#mech:Violence"><code>Violence</code></a> extensions. One of these
 two must be enabled in order to enable <a
-href="#mech:Undead"><code>Undead</code></a>. A problem should explicitly
-list all extensions that it uses, even those required by other
-extensions. For example, a problem that includes <a
+href="#mech:Undead"><code>Undead</code></a>. A scenario should
+explicitly list all extensions that it uses, even those required by
+other extensions. For example, a scenario that includes <a
 href="#mech:Undead"><code>Undead</code></a> should also explicitly list
 <a href="#mech:Sickness"><code>Sickness</code></a> or <a
 href="#mech:Violence"><code>Violence</code></a> or both.</p>
-<p>Several problem elements can be enabled by more than one extension.
+<p>Several scenario elements can be enabled by more than one extension.
 For example, several extensions enable potions of some sort. All of
 these extensions enable the <a
 href="#char:sorcerer"><code>sorcerer</code></a> character type, whose
 special actions revolve around using potions.</p>
 <p>Not all of the elements enabled by an extension need to be used in
-the problem, though at least one should be used. We recommend this rule
-of thumb: if an extension could be removed without modifying the problem
-at all, then it is not really enabled and should not be listed as part
-of the problem.</p>
+the scenario, though at least one should be used. We recommend this rule
+of thumb: if an extension could be removed without modifying the
+scenario at all, then it is not really enabled and should not be listed
+as part of the scenario.</p>
 <p><strong><code>Alchemy</code></strong><span id="mech:Alchemy"
 data-label="mech:Alchemy"></span></p>
 <ul>
@@ -921,11 +921,11 @@ href="#act:loot"><code>loot</code></a>, and <a
 href="#act:recover"><code>recover</code></a> actions.</p></li>
 </ul>
 <h2 id="sec:locations">Locations and Paths</h2>
-<p>MicroTales problems take place on a map made of one or more connected
-locations. A location has a unique name and a type. The type determines
-what special actions are available in that location. There can be more
-than one location of the same type on a map as long as they have
-different names. For example, <code>Sherwood</code> and
+<p>MicroTales scenarios take place on a map made of one or more
+connected locations. A location has a unique name and a type. The type
+determines what special actions are available in that location. There
+can be more than one location of the same type on a map as long as they
+have different names. For example, <code>Sherwood</code> and
 <code>Mirkwood</code> might both be locations of type <a
 href="#loc:forest"><code>forest</code></a>. We recommend avoiding
 duplicate locations when possible simply for the sake of variety.</p>
@@ -936,7 +936,7 @@ followed by a sequence of one-element maps that each associate one
 unique string name to a string type, where the type is one of those
 defined below. A sequence of maps is necessary because the order
 locations are defined in matters. The list of locations is not optional,
-because a problem must define at least one location.</p>
+because a scenario must define at least one location.</p>
 <p>Four location types are always available: the <a
 href="#loc:cave"><code>cave</code></a>, <a
 href="#loc:crossroads"><code>crossroads</code></a>, <a
@@ -955,18 +955,18 @@ locations of <a href="#sec:characters">characters</a>. For example, the
 <a href="#char:bandit"><code>bandit</code></a> character type’s default
 starting location is the first <a href="#loc:camp"><code>camp</code></a>
 or <a href="#loc:crossroads"><code>crossroads</code></a> location that
-is defined in the problem. If a problem contains both a <a
+is defined in the scenario. If a scenario contains both a <a
 href="#loc:camp"><code>camp</code></a> and a <a
 href="#loc:crossroads"><code>crossroads</code></a>, the <a
 href="#char:bandit"><code>bandit</code></a> will start in whichever one
-is defined first in the list of locations. Similarly, if the problem has
-more than one location of type <a
+is defined first in the list of locations. Similarly, if the scenario
+has more than one location of type <a
 href="#loc:camp"><code>camp</code></a>, the first one will be used. If
 there are no locations that a character prefers to start in, they
 default to starting in the first location in the list. These defaults do
-not apply if a problem explicitly states a character’s starting
+not apply if a scenario explicitly states a character’s starting
 location.</p>
-<p>After defining the list of locations, a problem should define how
+<p>After defining the list of locations, a scenario should define how
 they are connected via paths. A path is a pair of locations. A path goes
 in both directions. For example, if <code>Sherwood</code> and
 <code>Nottingham</code> are connected, then a character can <a
@@ -978,12 +978,12 @@ it should have connecting it to other locations.</p>
 data-reference="fig:problemex">1</a>, in YAML the list of paths is the
 key <code>paths</code> followed by a sequence of pairs of strings that
 match the names of locations. The list of paths is optional if no
-locations are connected, though only very small problems will have no
+locations are connected, though only very small scenarios will have no
 paths.</p>
 <p>We recommend that locations be placed on a 2 dimensional grid where
 each location is of equal size and paths always lead North, South, East
 or West. This is not required, but it makes it easier to visualize
-MicroTales problems for an audience.</p>
+MicroTales scenarios for an audience.</p>
 <p>The existence of paths is important for the <a
 href="#act:walk"><code>walk</code></a> action, but paths are not defined
 as <a href="#sec:variables">variables</a> because they do not change
@@ -1119,7 +1119,7 @@ metal item into another here.</p></li>
 <h2 id="sec:characters">Characters</h2>
 <p>Characters are agents who act in the story world. Like locations,
 each character has a unique name and a type. There can be more than one
-character of the same type in a problem as long as they have different
+character of the same type in a scenario as long as they have different
 names. We recommend avoiding duplicate character types when possible
 simply for the sake of variety.</p>
 <p>Figure <a href="#fig:problemex" data-reference-type="ref"
@@ -1127,13 +1127,13 @@ data-reference="fig:problemex">1</a> shows an example list of
 characters. In YAML, the list of characters is the key
 <code>characters</code> followed by a mapping of string names to string
 types, where the type is one of those defined below. The list of
-characters is not optional, because a problem must define at least one
+characters is not optional, because a scenario must define at least one
 character.</p>
 <p>Character types define what special actions a character can take.
 They prohibit some character goals and recommend others. Many character
 types also define a default starting location and starting items. These
-defaults do not apply if a problem explicitly states some other starting
-location or starting items.</p>
+defaults do not apply if a scenario explicitly states some other
+starting location or starting items.</p>
 <p>The only character type that is always available is the <a
 href="#char:peasant"><code>peasant</code></a>, which has no special
 qualities. All other character types are enabled by <a
@@ -1146,7 +1146,7 @@ href="#mech:Stealth"><code>Stealth</code></a> or <a
 href="#mech:Theft"><code>Theft</code></a> is enabled.</p></li>
 <li><p>Starts at the first <a href="#loc:camp"><code>camp</code></a> or
 <a href="#loc:crossroads"><code>crossroads</code></a> defined in the
-problem by default.</p></li>
+scenario by default.</p></li>
 <li><p>Required not to have <a
 href="#goal:lawful"><code>lawful</code></a> goal.</p></li>
 <li><p>Recommended to have a <a href="#goal:rich"><code>rich</code></a>
@@ -1165,7 +1165,7 @@ href="#mech:Healing"><code>Healing</code></a>, or <a
 href="#mech:Undead"><code>Undead</code></a> is enabled.</p></li>
 <li><p>Starts at the first <a href="#loc:chapel"><code>chapel</code></a>
 or <a href="#loc:graveyard"><code>graveyard</code></a> defined in the
-problem by default.</p></li>
+scenario by default.</p></li>
 <li><p>Required not to have <a
 href="#goal:avenged"><code>avenged</code></a> goal (unless they become a
 <a href="#const:Ghost"><code>Ghost</code></a>; see <a
@@ -1188,7 +1188,7 @@ data-label="char:knight"></span></p>
 or <a href="#mech:Violence"><code>Violence</code></a> is
 enabled.</p></li>
 <li><p>Starts at the first <a href="#loc:castle"><code>castle</code></a>
-or <a href="#loc:market"><code>market</code></a> defined in the problem
+or <a href="#loc:market"><code>market</code></a> defined in the scenario
 by default.</p></li>
 <li><p>Starts with a <a href="#const:Sword"><code>Sword</code></a> in
 their <a href="#var:left"><code>left</code></a> hand by
@@ -1208,7 +1208,7 @@ data-label="char:merchant"></span></p>
 href="#mech:Commerce"><code>Commerce</code></a> is enabled.</p></li>
 <li><p>Starts at the first <a href="#loc:market"><code>market</code></a>
 or <a href="#loc:crossroads"><code>crossroads</code></a> defined in the
-problem by default.</p></li>
+scenario by default.</p></li>
 <li><p>Recommended to start with at least one item of any type except a
 <a href="#const:Coin"><code>Coin</code></a>.</p></li>
 <li><p>Required not to have a <a
@@ -1225,7 +1225,7 @@ data-label="char:noble"></span></p>
 href="#mech:Enchantment"><code>Enchantment</code></a> or <a
 href="#mech:Monarchy"><code>Monarchy</code></a> is enabled.</p></li>
 <li><p>Starts at the first <a href="#loc:castle"><code>castle</code></a>
-or <a href="#loc:chapel"><code>chapel</code></a> defined in the problem
+or <a href="#loc:chapel"><code>chapel</code></a> defined in the scenario
 by default.</p></li>
 <li><p>Starts with a <a href="#const:Coin"><code>Coin</code></a> in
 their <a href="#var:left"><code>left</code></a> hand by
@@ -1241,8 +1241,8 @@ data-label="char:peasant"></span></p>
 <ul>
 <li><p>Starts at the first <a
 href="#loc:village"><code>village</code></a> or <a
-href="#loc:workshop"><code>workshop</code></a> defined in the problem by
-default.</p></li>
+href="#loc:workshop"><code>workshop</code></a> defined in the scenario
+by default.</p></li>
 </ul>
 <p><strong><code>sorcerer</code></strong><span id="char:sorcerer"
 data-label="char:sorcerer"></span></p>
@@ -1256,7 +1256,7 @@ href="#mech:Teleportation"><code>Teleportation</code></a>, or <a
 href="#mech:Undead"><code>Undead</code></a> is enabled.</p></li>
 <li><p>Starts at the first <a
 href="#loc:laboratory"><code>laboratory</code></a> or <a
-href="#loc:graveyard"><code>graveyard</code></a> defined in the problem
+href="#loc:graveyard"><code>graveyard</code></a> defined in the scenario
 by default.</p></li>
 <li><p>Recommended to start with at least one <a
 href="#sec:constants">potion</a> of any type.</p></li>
@@ -1266,30 +1266,30 @@ href="#goal:avenged"><code>avenged</code></a> goal.</p></li>
 not in a <a href="#loc:laboratory"><code>laboratory</code></a>.</p></li>
 </ul>
 <h2 id="sec:variables">Variables and Initial Values</h2>
-<p>Variables are features of a problem that are assigned one of several
-possible values. All of a problem’s variables with their assigned values
-define a problem state. Different <a href="#sec:actions">actions</a> are
-possible depending on the current state, and <a
-href="#sec:actions">actions</a> change the values assigned to variables.
-Actions are the only way to change variable values.</p>
-<p>A problem does not explicitly define its variables; they are implied
-by the other elements in the problem. For example, when the <a
+<p>Variables are features of a scenario that are assigned one of several
+possible values. All of a scenario’s variables with their assigned
+values define a scenario state. Different <a
+href="#sec:actions">actions</a> are possible depending on the current
+state, and <a href="#sec:actions">actions</a> change the values assigned
+to variables. Actions are the only way to change variable values.</p>
+<p>A scenario does not explicitly define its variables; they are implied
+by the other elements in the scenario. For example, when the <a
 href="#mech:Violence"><code>Violence</code></a> extension is enabled the
-problem must have a <a href="#var:health"><code>health</code></a>
+scenario must have a <a href="#var:health"><code>health</code></a>
 variable for every <a href="#sec:characters">character</a>.</p>
 <p>A variable is identified by a name followed by zero to many
 arguments. In the example above, <code>health</code> is the name of the
 variable, and it has one argument, the name of the character. If a
-problem defines two characters named <code>Robin</code> and
+scenario defines two characters named <code>Robin</code> and
 <code>Marian</code>, then it will have two <a
 href="#var:health"><code>health</code></a> variables, one for each of
 them. In text, we would write those variables as
 <code>health(Robin)</code> and <code>health(Marian)</code>, though in
 YAML we use a different style, as discussed below.</p>
 <p>Some variables have more than one argument, and the order of
-arguments matters. For example, every problem tracks the <a
+arguments matters. For example, every scenario tracks the <a
 href="#var:relationship"><code>relationship</code></a> between each pair
-of characters, so our example problem will need the variables
+of characters, so our example scenario will need the variables
 <code>relationship(Robin, Marian)</code> and
 <code>relationship(Marian, Robin)</code>. The first variable tracks how
 <code>Robin</code> regards <code>Marian</code>, and the second tracks
@@ -1303,7 +1303,7 @@ value is simply Boolean, meaning <code>True</code> or
 example, every character has a <a
 href="#var:location"><code>location</code></a> variable, and its
 possible values are the names of every <a
-href="#sec:locations">location</a> defined in the problem, plus
+href="#sec:locations">location</a> defined in the scenario, plus
 <code>Null</code>to represent a situation where the character is nowhere
 on the map. Sometimes a variable’s value is a set of pre-defined <a
 href="#sec:constants">constants</a>. For example, a <a
@@ -1317,7 +1317,7 @@ href="#sec:constants">constants</a> as their possible values. All
 constants are defined in <a href="#sec:constants">the next
 section</a>.</p>
 <p>All variables have a default initial value they will be assigned, but
-these defaults are ignored if the problem explicitly defines a
+these defaults are ignored if the scenario explicitly defines a
 variable’s initial value. Figure <a href="#fig:problemex"
 data-reference-type="ref" data-reference="fig:problemex">1</a> shows an
 example list of initial values. In YAML, this list is the key
@@ -1489,7 +1489,7 @@ name of any <a href="#sec:locations">location</a> or <code>Null</code>
 map.</p></li>
 <li><p><a href="#sec:characters">Character types</a> specify default
 locations. When the specified locations are not available, the default
-value is the first location defined in the problem.</p></li>
+value is the first location defined in the scenario.</p></li>
 <li><p>The <a href="#goal:at"><code>at</code></a> goal is satisfied by a
 character being at a certain location.</p></li>
 <li><p>Many actions require that a character be at a certain location or
@@ -1980,7 +1980,7 @@ href="#fig:problemex" data-reference-type="ref"
 data-reference="fig:problemex">1</a> shows an example list of goals. In
 YAML, it is the key <code>goals</code> followed by a sequence of
 sequences. If the sequence is a character goal, the first element is the
-name of one of the problem’s <a href="#sec:characters">characters</a>.
+name of one of the scenario’s <a href="#sec:characters">characters</a>.
 If the sequence is a story goal, this name is omitted. The next elements
 in both types are the goal name (defined below), followed by the goal’s
 arguments.</p>
@@ -2348,9 +2348,9 @@ href="#var:spouse"><code>spouse</code></a> is <em>spouse</em>.</p></li>
 <p>Actions are events that happen in a story. An action has
 preconditions that limit when it can happen and effects that modify the
 world state.</p>
-<p>A problem does not explicitly define actions; they are implied by the
-other elements in the problem. Any time an action is enabled by a <a
-href="#sec:extensions">extension</a> it is available in a story. For
+<p>A scenario does not explicitly define actions; they are implied by
+the other elements in the scenario. Any time an action is enabled by a
+<a href="#sec:extensions">extension</a> it is available in a story. For
 example, the <a href="#act:enthrone"><code>enthrone</code></a> action is
 always available in every story where <a
 href="#mech:Monarchy"><code>Monarchy</code></a> is enabled, though it
@@ -2380,10 +2380,10 @@ href="#const:Healthy"><code>Healthy</code></a> again via by the <a
 href="#act:heal"><code>heal</code></a> action, which is actively done by
 a character, but they can also simply get better via the <a
 href="#act:recover"><code>recover</code></a> action. Actions not taken
-by characters provide flexibility in solving problems, but may be
+by characters provide flexibility in solving scenarios, but may be
 perceived as a <span><em>deus ex machina</em></span>.</p>
 <p>For brevity, we list preconditions and effects on all variables, even
-if they are not used in a problem. For example, many actions require
+if they are not used in a scenario. For example, many actions require
 that a character not be <a href="#const:Dead"><code>Dead</code></a>, but
 this only applies if <a href="#var:health"><code>health</code></a>
 variables exist. If the <a
@@ -2420,7 +2420,7 @@ item; only one is removed.)</p></li>
 that one of their hands that was previously <code>Null</code>is now
 <em>item</em>.</p></li>
 </ul>
-<p>The only actions that always available in every problem are basic
+<p>The only actions that always available in every scenario are basic
 movement, the <a href="#act:walk"><code>walk</code></a> action, and
 basic item interactions, the <a
 href="#act:pickup"><code>pickup</code></a>, <a

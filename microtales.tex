@@ -38,7 +38,7 @@ There has now been several decades of academic research on narrative planning~\c
 
 What we feel is missing, and what we are trying to provide with this project, is a single story domain that can generate a wide variety of storytelling problems that vary in size and difficulty. We are inspired by projects like the International Planning Competition~\cite{taitler2023ipc}, AI Gymnasium~\cite{cote2019textworld}, and TextWorld~\cite{cote2019textworld}, but we find many of their problems do not capture the storytelling challenges we are interested in studying. We also hope that this project will help to make story planning problems more accessible to non-academic audiences.
 
-This document describes MicroTales, a single storytelling domain based on very simple fantasy Computer Role Playing Games. Each problem has:
+This document describes MicroTales, a single storytelling domain based on very simple fantasy Computer Role Playing Games. Each problem, which we call a \emph{scenario}, has:
 \begin{itemize}
 	\item Objects that exist, such as characters and locations.
 	\item Variables that can be assigned values to define the world's current state.
@@ -47,33 +47,33 @@ This document describes MicroTales, a single storytelling domain based on very s
 	\item Actions, which have preconditions that limit when they can occur and effects that define how they change the world state.
 \end{itemize}
 
-\noindent We define each of these parts in detail. MicroTales problems are highly modular, with different elements becoming available only when certain \hyperref[sec:extensions]{extensions} are enabled. For example, the \refmech{Undead} extension contains characters, items, locations, and actions related to ghosts. When the \refmech{Undead} extension is enabled, these elements can be used in a problem.
+\noindent We define each of these parts in detail. MicroTales scenarios are highly modular, with different elements becoming available only when certain \hyperref[sec:extensions]{extensions} are enabled. For example, the \refmech{Undead} extension contains characters, items, locations, and actions related to ghosts. When the \refmech{Undead} extension is enabled, these elements can be used in a scenario.
 
 Our definitions do not assume any particular implementation. We want it to be possible to implement MicroTales in everything from the Planning Domain Definition Language~\cite{ghallab1998pddl}, used to define classical planning problems, to an AI Gymnasium environment~\cite{towers2024gymnasium}, used to define a Markov Decision Process for reinforcement learning, to even non-digital implementations, like a board game.
 
 \section{Design Goals}
 
-\paragraph{Game-Like Storytelling Environment:} MicroTales is designed to imitate a simple game environment where a player controls one character and an {\em experience manager} (which might be a human game master or an algorithm) controls the other characters and the environment~\cite{riedl2013interactive}. One of the central challenges in this kind of environment is telling a good story while allowing the player significant agency to make meaningful choices. Problems like this are often solved interactively, meaning that new solutions are generated during play to adapt to unexpected player actions. This does not mean all implementations of MicroTales need to be interactive. You may find it helpful to generate problems that are solved only once; our goal is for them to reflect the kinds of problems that an experience manager would need to solve interactively. In other words, if an algorithm can solve a wide variety of MicroTales problems, it would probably make a good experience manager if it could be made to run interactively.
+\paragraph{Game-Like Storytelling Environment:} MicroTales is designed to imitate a simple game environment where a player controls one character and an {\em experience manager} (which might be a human game master or an algorithm) controls the other characters and the environment~\cite{riedl2013interactive}. One of the central challenges in this kind of environment is telling a good story while allowing the player significant agency to make meaningful choices. Problems like this are often solved interactively, meaning that new solutions are generated during play to adapt to unexpected player actions. This does not mean all implementations of MicroTales need to be interactive. You may find it helpful to generate scenarios that are solved only once; our goal is for them to reflect the kinds of problems that an experience manager would need to solve interactively. In other words, if an algorithm can solve a wide variety of MicroTales scenarios, it would probably make a good experience manager if it could be made to run interactively.
 
 \paragraph{Event-Level Storytelling:} Stories can be generated at many levels of granularity. The smallest ``atomic unit'' of story content in MicroTales is an event, which typically has a subject, verb, and usually one or two objects. An event would correspond to roughly one sentence of a written story. Early storytelling systems like Universe~\cite{lebowitz1985story} and Facade~\cite{mateas2005structuring} create stories one scene at a time, and an atomic piece of storytelling content corresponds to roughly one paragraph of a written story. Systems based on text generation, like AI Dungeon~\cite{walton2019aidungeon}, generate stories one word at a time. Event-level storytelling exists between these two poles.
 
-\paragraph{Scalable along Several Dimensions:} It should be possible to generate a wide variety of problems of varying size and difficulty, from trivially easy to nearly impossible. MicroTales can vary in the size of the map, the number of characters, the number of items, the types of actions that are available, and the number and complexity of goals that need to be achieved. The ability to generate a wide variety of problems has several advantages. By generating problems of different sizes and with different features turned on or off, we can make a controlled study of what makes story planning problems easy or hard to solve. Having many problems to train on also encourages learning-based approaches to generalize rather than overfit to a small number of specific problems.
+\paragraph{Scalable along Several Dimensions:} It should be possible to generate a wide variety of scenarios of varying size and difficulty, from trivially easy to nearly impossible. MicroTales can vary in the size of the map, the number of characters, the number of items, the types of actions that are available, and the number and complexity of goals that need to be achieved. The ability to generate a wide variety of scenarios has several advantages. By generating scenarios of different sizes and with different features turned on or off, we can make a controlled study of what makes story planning problems easy or hard to solve. Having many scenarios to train on also encourages learning-based approaches to generalize rather than overfit to a small number of specific problems.
 
-\paragraph{Following Genre Tropes:} While MicroTales is meant to allow a wide variety of problems, it is also attempting to follow the genre tropes of simple Medieval computer Role Playing Games. This serves two purposes. First, it allows players of an interactive MicroTales game to leverage existing genre knowledge and minimize the amount of onboarding required to understand the game's rules. Second, MicroTales is intentionally attempting to represent ``naturally occurring'' problems. Some things are unlikely or impossible, and some things are over-represented. MicroTales is not meant to represent every conceivable situation or action. It is not meant to be the only type of benchmark problem that storytelling algorithms should be tested on. We are attempting to add to, not restrict, the variety of storytelling problems available for testing.
+\paragraph{Following Genre Tropes:} While MicroTales is meant to allow a wide variety of scenarios, it is also attempting to follow the genre tropes of simple Medieval computer Role Playing Games. This serves two purposes. First, it allows players of an interactive MicroTales game to leverage existing genre knowledge and minimize the amount of onboarding required to understand the game's rules. Second, MicroTales is intentionally attempting to represent ``naturally occurring'' problems. Some things are unlikely or impossible, and some things are over-represented. MicroTales is not meant to represent every conceivable situation or action. It is not meant to be the only type of benchmark problem that storytelling algorithms should be tested on. We are attempting to add to, not restrict, the variety of storytelling problems available for testing.
 
-\paragraph{Active NPCs:} One purpose of MicroTales is to fill a gap we perceive in the kinds of games available to test storytelling algorithms, namely story games with active non-player characters (NPCs). Many story games, like the interactive fiction {\em Zork}~\cite{anderson1980zork} and similar games available in the TextWorld environment~\cite{cote2019textworld}, rely on the player character to take most of the actions in the story. Actions by others are often short and direct reactions to the player. An ideal MicroTales problem will feature NPCs taking actions motivated by their own goals, ideally in ways that are predictable or at least believable to the player. Solving a MicroTales problem should involve the player anticipating the actions of NPCs and creating a situation that encourages NPCs to act in a way that accomplishes the player's goal.
+\paragraph{Active NPCs:} One purpose of MicroTales is to fill a gap we perceive in the kinds of games available to test storytelling algorithms, namely story games with active non-player characters (NPCs). Many story games, like the interactive fiction {\em Zork}~\cite{anderson1980zork} and similar games available in the TextWorld environment~\cite{cote2019textworld}, rely on the player character to take most of the actions in the story. Actions by others are often short and direct reactions to the player. An ideal MicroTales scenario will feature NPCs taking actions motivated by their own goals, ideally in ways that are predictable or at least believable to the player. Solving a MicroTales scenario should involve the player anticipating the actions of NPCs and creating a situation that encourages NPCs to act in a way that accomplishes the player's goal.
 
 \paragraph{Wide Variety of Actions:} Many planning and reinforcement learning benchmark problems have a limited variety of action types available. For example, the classic {\em Blocks World} planning problem~\cite{slaney2001blocks} has only one type of action---moving a block onto another block or onto the table. While it might have a large number of possible actions when we consider all blocks, it has only one {\em type} of action. Similarly, the {\em Cart Pole} reinforcement learning problem~\cite{towers2024gymnasium} has only two actions: push the cart left or right. The action can vary in the force applied, but still there is only one or two types of action. We find that storytelling problems tend to involve a large number of action types. MicroTales has many types of actions with different kinds of preconditions and effects.
 
 \paragraph{Soft Locks are Possible:} A soft lock means a solvable problem has been put into a state from which no solutions are possible. The potential to soft lock a puzzle makes it challenging because solvers must plan ahead. Solvers that rely on performing random actions---like Monte Carlo random rollouts or random exploration in Markov Decision Process solvers---will need to account for soft locks. Many benchmark problems used to test classical planning algorithms~\cite{taitler2023ipc} do not allow soft locks. Stories often feature irreversible actions that require careful planning, which is why soft locks are allowed, and even encouraged, in MicroTales.
 
-\paragraph{Deterministic Actions:} Actions in MicroTales are deterministic, meaning that when an action occurs we know with 100\% certainty what the resulting state will be afterward. Determinism allows a wide variety of search and planning techniques to be applied. Real world problems are not deterministic, but MicroTales is not designed to simulate a real world problem; it is designed to simulate a game in a virtual environment where the experience manager has full control over the virtual world. While a single MicroTales problem is deterministic, the larger problem of experience management in an interactive MicroTales game is usually viewed as nondeterministic since the player may take unexpected actions.
+\paragraph{Deterministic Actions:} Actions in MicroTales are deterministic, meaning that when an action occurs we know with 100\% certainty what the resulting state will be afterward. Determinism allows a wide variety of search and planning techniques to be applied. Real world problems are not deterministic, but MicroTales is not designed to simulate a real world problem; it is designed to simulate a game in a virtual environment where the experience manager has full control over the virtual world. While a single MicroTales scenario is deterministic, the larger problem of experience management in an interactive MicroTales game is usually viewed as nondeterministic since the player may take unexpected actions.
 
-\paragraph{Complex Multi-Agent Interactions:} Most problems will feature more than one character. Many existing AI benchmarks feature only a single agent or assume agents are strictly cooperative or competitive. In MicroTales, each character has their own goals, and they should aid or thwart one another to the extent that their goals align or diverge. One of the central challenges of storytelling is ensuring that each character behaves realistically while maintaining a story's central structure. MicroTales provides an environment to compare emergent storytelling via multi-agent systems to centralized storytelling via planning.
+\paragraph{Complex Multi-Agent Interactions:} Most scenarios will feature more than one character. Many existing AI benchmarks feature only a single agent or assume agents are strictly cooperative or competitive. In MicroTales, each character has their own goals, and they should aid or thwart one another to the extent that their goals align or diverge. One of the central challenges of storytelling is ensuring that each character behaves realistically while maintaining a story's central structure. MicroTales provides an environment to compare emergent storytelling via multi-agent systems to centralized storytelling via planning.
 
-\paragraph{No Model of Storytelling Enforced:} MicroTales enables the study of what makes a story in a story game believable, interesting, and fun. It tries to avoid enforcing any particular model of storytelling in its rules. Action preconditions are meant to be minimal requirements on when an action would be ``physically possible'' in the virtual world. For example, one character can only \refact{give} an item to another if they are in the same location and if the giver has the item. The preconditions do not require that the receiver wants the item; it is up to the algorithm and its model of storytelling to determine whether this action makes sense. To study a model of good storytelling, it must be possible to generate bad stories. Many AI benchmark problems define success as reaching a clear goal via a shortest or lowest cost path, but many MicroTales problems will have ``solutions'' that are bad stories---that is, a sequence of actions that achieves the story goals but is made of actions that are not believable or fun. The quality of a MicroTales solution should not be judged solely on whether it achieves goals or on the number of actions it contains. A solution must be evaluated as a story, but MicroTales does not define what makes a good story. In other words, MicroTales defines a set of objects, actions, and goals so that two researchers can be said to be working in the same domain, but it does not define success in that domain.
+\paragraph{No Model of Storytelling Enforced:} MicroTales enables the study of what makes a story in a story game believable, interesting, and fun. It tries to avoid enforcing any particular model of storytelling in its rules. Action preconditions are meant to be minimal requirements on when an action would be ``physically possible'' in the virtual world. For example, one character can only \refact{give} an item to another if they are in the same location and if the giver has the item. The preconditions do not require that the receiver wants the item; it is up to the algorithm and its model of storytelling to determine whether this action makes sense. To study a model of good storytelling, it must be possible to generate bad stories. Many AI benchmark problems define success as reaching a clear goal via a shortest or lowest cost path, but many MicroTales scenarios will have ``solutions'' that are bad stories---that is, a sequence of actions that achieves the story goals but is made of actions that are not believable or fun. The quality of a MicroTales solution should not be judged solely on whether it achieves goals or on the number of actions it contains. A solution must be evaluated as a story, but MicroTales does not define what makes a good story. In other words, MicroTales defines a set of objects, actions, and goals so that two researchers can be said to be working in the same domain, but it does not define success in that domain.
 
-\paragraph{Problem Curation Encouraged:} MicroTales defines a problem's elements and when they can be used, but it makes no claim that all generated problems are interesting. Many MicroTales problems will have no way to reach a goal state, and many that have a reachable goal state may not have any interesting or good stories that do so. In other words, generating a uniform sample of MicroTales problems is not likely to result in a set of interesting problems. Problem generators will need to apply further criteria and quality checks to ensure problems are interesting. Generating or curating interesting problem sets by hand is also encouraged.
+\paragraph{Problem Curation Encouraged:} MicroTales defines a scenario's elements and when they can be used, but it makes no claim that all generated scenarios are interesting. Many MicroTales scenarios will have no way to reach a goal state, and many that have a reachable goal state may not have any interesting or good stories that do so. In other words, generating a uniform sample of MicroTales scenarios is not likely to result in a set of interesting problems. Generators will need to apply further criteria and quality checks to ensure scenarios are interesting. Generating or curating interesting scenario sets by hand is also encouraged.
 
 \newpage
 
@@ -117,13 +117,13 @@ goals:
 - [wed, Robin, Marian]        # Story goal: Robin marries Marian.
 \end{code}}
 \vspace{-1em}
-\caption{An example MicroTales problem in YAML format.}
+\caption{An example MicroTales scenario in YAML format.}
 \label{fig:problemex}
 \end{figure}
 
-\section{Example Problem}
+\section{Example Scenario}
 
-Figure \ref{fig:problemex} gives an example MicroTales problem that approximates a simple version of the Robin Hood setting. The story goal, given on the last line, is for Robin Hood and Maid Marian to get married. This section describes some example stories that are possible in this problem and why they might be desirable or undesirable. We assume this problem is presented as an interactive game where the player controls Robin Hood.
+Figure \ref{fig:problemex} gives an example MicroTales scenario that approximates a simple version of the Robin Hood setting. The story goal, given on the last line, is for Robin Hood and Maid Marian to get married. This section describes some example stories that are possible in this scenario and why they might be desirable or undesirable. We assume this scenario is presented as an interactive game where the player controls Robin Hood.
 
 \begin{code}
 walk(Robin, Nottingham) # Robin goes to Nottingham Castle.
@@ -132,7 +132,7 @@ attack(Sheriff, Robin)  # The Sheriff of Nottingham hurts Robin.
 attack(Sheriff, Robin)  # The sheriff kills Robin.
 \end{code}
 
-This is a simple but unsuccessful story. Robin robs Prince John, but the Sheriff of Nottingham kills Robin for his crimes. This example does not achieve the story goal, but if the problem is presented as an interactive puzzle it might be a reasonable but unsuccessful attempt by the player to achieve Robin's goals. Suppose the player tries a different approach.
+This is a simple but unsuccessful story. Robin robs Prince John, but the Sheriff of Nottingham kills Robin for his crimes. This example does not achieve the story goal, but if the scenario is presented as an interactive puzzle it might be a reasonable but unsuccessful attempt by the player to achieve Robin's goals. Suppose the player tries a different approach.
 
 \begin{code}
 walk(Robin, Castle)          # Robin goes to Nottingham Castle.
@@ -172,7 +172,7 @@ marry(Robin, Marian)        # Marian becomes queen by marriage.
 
 John starts by achieving his \refgoal{ruling} goal and becoming the \refvar{monarch}. He and Marian then \refact{walk} in the direction of Fountains Abbey to \refact{marry}. On the way, John gets robbed by Robin Hood. The player waiting for John to pass by is a prime example of a player anticipating active NPCs. Robin then goes to Nottingham Castle and crowns himself the new \refvar{monarch} before the wedding can take place. The sheriff takes the crown from Robin and goes to Sherwood Forest hoping to give the crown to John. Robin makes his way to Fountains Abbey and marries Marian, achieving the story goal.
 
-In this example, our model of storytelling assumes characters only witness actions that occur in their location (except \refact{enthrone}, which gets announced to everyone throughout the kingdom). The sheriff is not aware of Robin's crimes, since he was not in Sherwood Forest during the robbery. This model of limited observability is not required. MicroTales does not model character beliefs; that is left to the storyteller, who is free to use this or any other model. For this problem, we think it makes the characters seems more realistic, and it adds a new dimension to the puzzle by encouraging Robin to avoid witnesses to his crimes.
+In this example, our model of storytelling assumes characters only witness actions that occur in their location (except \refact{enthrone}, which gets announced to everyone throughout the kingdom). The sheriff is not aware of Robin's crimes, since he was not in Sherwood Forest during the robbery. This model of limited observability is not required. MicroTales does not model character beliefs; that is left to the storyteller, who is free to use this or any other model. For this scenario, we think it makes the characters seems more realistic, and it adds a new dimension to the puzzle by encouraging Robin to avoid witnesses to his crimes.
 
 Given the sheriff does not know about Robin's crimes, it may seem odd that he would \refact{take} the \refconst{Crown}. This theft makes him a \refvar{criminal} and goes against his \refgoal{lawful} goal. The sheriff takes the crown because he hopes to return it to John so that John can again take the throne. After returning the crown, the sheriff plans to \refact{arrest} himself, satisfying all his goals, though the story ends before he can complete his plan. Does it make sense for the sheriff to \refact{arrest} himself? This is up to the storyteller.
 
@@ -182,42 +182,42 @@ Notice also how the sheriff and John meet in Sherwood Forest. According to our m
 
 \section{Definitions}
 
-A MicroTales problem is defined by several explicit elements which imply the inclusion of other elements. The explicit elements of a problem are:
+A MicroTales scenario is defined by several explicit elements which imply the inclusion of other elements. The explicit elements of a scenario are:
 \begin{itemize}
 	\item An optional name or title.
-	\item An optional version number, to check compatibility. This is the version of MicroTales, not of the problem itself.
+	\item An optional version number, to check compatibility. This is the version of MicroTales, not of the scenario itself.
 	\item A list of \hyperref[sec:extensions]{extensions}, which define what elements are available to use.
 	\item A list of \hyperref[sec:locations]{locations}, each defined by a name and type.
 	\item A list of \hyperref[sec:locations]{paths} that connect locations.
 	\item A list of \hyperref[sec:characters]{characters}, each defined by a name and type.
-	\item A list of initial value assignments to the problem's \hyperref[sec:variables]{variables}.
+	\item A list of initial value assignments to the scenario's \hyperref[sec:variables]{variables}.
 	\item A list of \hyperref[sec:goals]{goals} for the characters and the story itself.
 \end{itemize}
 
-\noindent Figure \ref{fig:problemex} shows an example problem in YAML format.
+\noindent Figure \ref{fig:problemex} shows an example scenario in YAML format.
 
-Many elements of a problem are not explicitly listed but are implied by what is explicitly listed. For example, each problem defines \hyperref[sec:variables]{variables}, and the current state of the problem is an assignment of a value to each of its variables. Variables are not explicitly listed because they are implied by the extensions, locations, and characters. Similarly, actions are not explicitly listed because which actions are available is implied by the other elements.
+Many elements of a scenario are not explicitly listed but are implied by what is explicitly listed. For example, each scenario defines \hyperref[sec:variables]{variables}, and the current state of the scenario is an assignment of a value to each of its variables. Variables are not explicitly listed because they are implied by the extensions, locations, and characters. Similarly, actions are not explicitly listed because which actions are available is implied by the other elements.
 
-A problem's elements cannot be created or destroyed. The only thing about a problem that changes over time is the values assigned to its \hyperref[sec:variables]{variables}. New locations cannot be added to the map, nor can existing locations be removed. New characters cannot be created or removed (though they can be killed when the relevant \hyperref[sec:extensions]{extensions} are enabled). The items a character is carrying are not first class elements of a problem, so they do not need to be explicitly defined, and they can be created and destroyed (\hyperref[sec:constants]{see the section on Constants for how items work}).
+A scenario's elements cannot be created or destroyed. The only thing about a scenario that changes over time is the values assigned to its \hyperref[sec:variables]{variables}. New locations cannot be added to the map, nor can existing locations be removed. New characters cannot be created or removed (though they can be killed when the relevant \hyperref[sec:extensions]{extensions} are enabled). The items a character is carrying are not first class elements of a scenario, so they do not need to be explicitly defined, and they can be created and destroyed (\hyperref[sec:constants]{see the section on Constants for how items work}).
 
-The following subsections define MicroTales elements in detail. Rules which must be followed are {\em required}. When something is {\em recommended}, it means that a problem generator should try to follow those rules when it can, but it may choose to ignore those rules in service of some other design goal. When a definition says something is a {\em default}, it means that a problem assumes the rule will be followed. If a default is not followed, the problem must explicitly state some other value. For example, a \refchar{noble} character starts with a \refconst{Coin} in their \refvar{left} hand by default. The problem does not need to list this under its initial facts because it will be assumed. If the noble should not start with a coin, the problem should explicitly list their \refvar{left} hand as \None.
+The following subsections define MicroTales elements in detail. Rules which must be followed are {\em required}. When something is {\em recommended}, it means that a scenario generator should try to follow those rules when it can, but it may choose to ignore those rules in service of some other design goal. When a definition says something is a {\em default}, it means that a scenario assumes the rule will be followed. If a default is not followed, the scenario must explicitly state some other value. For example, a \refchar{noble} character starts with a \refconst{Coin} in their \refvar{left} hand by default. The scenario does not need to list this under its initial facts because it will be assumed. If the noble should not start with a coin, the scenario should explicitly list their \refvar{left} hand as \None.
 
 \paragraph{Style and Capitalization}
-Throughout this document, we capitalize specific, individual objects. This includes universal constants like \element{True}, \element{False}, and \None, the names of all \hyperref[sec:extensions]{extensions}, the names of all \hyperref[sec:constants]{constants}, and the names given to individual objects defined in example problems, like the character name \element{Robin}. We use lower case for types, which includes all \hyperref[sec:locations]{location types}, \hyperref[sec:characters]{character types}, \hyperref[sec:variables]{variable names}, \hyperref[sec:goals]{goal names}, and \hyperref[sec:actions]{action names}. For example, \element{Robin} is the name of a specific character, so we capitalize his name, but his character type, \refchar{bandit}, is a type and is written in lower case. The variable \element{health(Robin)} has a lower case name because \refvar{health} is a type of variables, but the value \refconst{Healthy}, which can be assigned to that variable, is a single individual constant and is capitalized.
+Throughout this document, we capitalize specific, individual objects. This includes universal constants like \element{True}, \element{False}, and \None, the names of all \hyperref[sec:extensions]{extensions}, the names of all \hyperref[sec:constants]{constants}, and the names given to individual objects defined in example scenarios, like the character name \element{Robin}. We use lower case for types, which includes all \hyperref[sec:locations]{location types}, \hyperref[sec:characters]{character types}, \hyperref[sec:variables]{variable names}, \hyperref[sec:goals]{goal names}, and \hyperref[sec:actions]{action names}. For example, \element{Robin} is the name of a specific character, so we capitalize his name, but his character type, \refchar{bandit}, is a type and is written in lower case. The variable \element{health(Robin)} has a lower case name because \refvar{health} is a type of variables, but the value \refconst{Healthy}, which can be assigned to that variable, is a single individual constant and is capitalized.
 
 \newpage
 
 \subsection{Extensions} \label{sec:extensions}
 
-An extension is a group of related problem elements that become available when an extension is included in a problem. Extensions are designed to allow additional types of actions in a problem, but doing so means enabling the locations, characters, and goals that would make those actions possible and relevant.
+An extension is a group of related elements that become available when an extension is included in a scenario. Extensions are designed to allow additional types of actions in a scenario, but doing so means enabling the locations, characters, and goals that would make those actions possible and relevant.
 
-Figure \ref{fig:problemex} shows an example list of extensions. In YAML, the list of extensions is simply the key \element{extensions} followed by a sequence of strings. The list of extensions is optional and can be omitted, but problems with no extensions are likely to be uninteresting.
+Figure \ref{fig:problemex} shows an example list of extensions. In YAML, the list of extensions is simply the key \element{extensions} followed by a sequence of strings. The list of extensions is optional and can be omitted, but scenarios with no extensions are likely to be uninteresting.
 
-Some extensions require that other extensions are also enabled. For example, the \refmech{Undead} extension requires some way for characters to die, which is enabled by both the \refmech{Sickness} and \refmech{Violence} extensions. One of these two must be enabled in order to enable \refmech{Undead}. A problem should explicitly list all extensions that it uses, even those required by other extensions. For example, a problem that includes \refmech{Undead} should also explicitly list \refmech{Sickness} or \refmech{Violence} or both.
+Some extensions require that other extensions are also enabled. For example, the \refmech{Undead} extension requires some way for characters to die, which is enabled by both the \refmech{Sickness} and \refmech{Violence} extensions. One of these two must be enabled in order to enable \refmech{Undead}. A scenario should explicitly list all extensions that it uses, even those required by other extensions. For example, a scenario that includes \refmech{Undead} should also explicitly list \refmech{Sickness} or \refmech{Violence} or both.
 
-Several problem elements can be enabled by more than one extension. For example, several extensions enable potions of some sort. All of these extensions enable the \refchar{sorcerer} character type, whose special actions revolve around using potions.
+Several scenario elements can be enabled by more than one extension. For example, several extensions enable potions of some sort. All of these extensions enable the \refchar{sorcerer} character type, whose special actions revolve around using potions.
 
-Not all of the elements enabled by an extension need to be used in the problem, though at least one should be used. We recommend this rule of thumb: if an extension could be removed without modifying the problem at all, then it is not really enabled and should not be listed as part of the problem.
+Not all of the elements enabled by an extension need to be used in the scenario, though at least one should be used. We recommend this rule of thumb: if an extension could be removed without modifying the scenario at all, then it is not really enabled and should not be listed as part of the scenario.
 
 \defmech{Alchemy}{
 \begin{itemize}
@@ -351,19 +351,19 @@ Not all of the elements enabled by an extension need to be used in the problem, 
 
 \subsection{Locations and Paths} \label{sec:locations}
 
-MicroTales problems take place on a map made of one or more connected locations. A location has a unique name and a type. The type determines what special actions are available in that location. There can be more than one location of the same type on a map as long as they have different names. For example, \element{Sherwood} and \element{Mirkwood} might both be locations of type \refloc{forest}. We recommend avoiding duplicate locations when possible simply for the sake of variety.
+MicroTales scenarios take place on a map made of one or more connected locations. A location has a unique name and a type. The type determines what special actions are available in that location. There can be more than one location of the same type on a map as long as they have different names. For example, \element{Sherwood} and \element{Mirkwood} might both be locations of type \refloc{forest}. We recommend avoiding duplicate locations when possible simply for the sake of variety.
 
-Figure \ref{fig:problemex} shows an example list of locations. In YAML, the list of locations is the key \element{locations} followed by a sequence of one-element maps that each associate one unique string name to a string type, where the type is one of those defined below. A sequence of maps is necessary because the order locations are defined in matters. The list of locations is not optional, because a problem must define at least one location.
+Figure \ref{fig:problemex} shows an example list of locations. In YAML, the list of locations is the key \element{locations} followed by a sequence of one-element maps that each associate one unique string name to a string type, where the type is one of those defined below. A sequence of maps is necessary because the order locations are defined in matters. The list of locations is not optional, because a scenario must define at least one location.
 
 Four location types are always available: the \refloc{cave}, \refloc{crossroads}, \refloc{forest}, and \refloc{village}. These locations are similar in function---\hyperref[sec:characters]{characters} can \refact{drop} or \refact{pickup} an \refvar{item}. The \refloc{cave} and \refloc{forest} have default \refvar{item}s waiting to be picked up when some extensions are enabled.
 
-The order that locations are defined in affects the default starting locations of \hyperref[sec:characters]{characters}. For example, the \refchar{bandit} character type's default starting location is the first \refloc{camp} or \refloc{crossroads} location that is defined in the problem. If a problem contains both a \refloc{camp} and a \refloc{crossroads}, the \refchar{bandit} will start in whichever one is defined first in the list of locations. Similarly, if the problem has more than one location of type \refloc{camp}, the first one will be used. If there are no locations that a character prefers to start in, they default to starting in the first location in the list. These defaults do not apply if a problem explicitly states a character's starting location.
+The order that locations are defined in affects the default starting locations of \hyperref[sec:characters]{characters}. For example, the \refchar{bandit} character type's default starting location is the first \refloc{camp} or \refloc{crossroads} location that is defined in the scenario. If a scenario contains both a \refloc{camp} and a \refloc{crossroads}, the \refchar{bandit} will start in whichever one is defined first in the list of locations. Similarly, if the scenario has more than one location of type \refloc{camp}, the first one will be used. If there are no locations that a character prefers to start in, they default to starting in the first location in the list. These defaults do not apply if a scenario explicitly states a character's starting location.
 
-After defining the list of locations, a problem should define how they are connected via paths. A path is a pair of locations. A path goes in both directions. For example, if \element{Sherwood} and \element{Nottingham} are connected, then a character can \refact{walk} from one to the other and back again. When defining a path, the two locations can be given in either order. Each location type defines a minimum and maximum number of paths it should have connecting it to other locations.
+After defining the list of locations, a scenario should define how they are connected via paths. A path is a pair of locations. A path goes in both directions. For example, if \element{Sherwood} and \element{Nottingham} are connected, then a character can \refact{walk} from one to the other and back again. When defining a path, the two locations can be given in either order. Each location type defines a minimum and maximum number of paths it should have connecting it to other locations.
 
-As shown in Figure \ref{fig:problemex}, in YAML the list of paths is the key \element{paths} followed by a sequence of pairs of strings that match the names of locations. The list of paths is optional if no locations are connected, though only very small problems will have no paths.
+As shown in Figure \ref{fig:problemex}, in YAML the list of paths is the key \element{paths} followed by a sequence of pairs of strings that match the names of locations. The list of paths is optional if no locations are connected, though only very small scenarios will have no paths.
 
-We recommend that locations be placed on a 2 dimensional grid where each location is of equal size and paths always lead North, South, East or West. This is not required, but it makes it easier to visualize MicroTales problems for an audience.
+We recommend that locations be placed on a 2 dimensional grid where each location is of equal size and paths always lead North, South, East or West. This is not required, but it makes it easier to visualize MicroTales scenarios for an audience.
 
 The existence of paths is important for the \refact{walk} action, but paths are not defined as \hyperref[sec:variables]{variables} because they do not change (though the \refloc{jail} location type can be \refvar{locked} to restrict movement). We recommend that all locations be accessible to one another. In other words, it should be possible to \refact{walk} a route from any location to any other.
 
@@ -457,18 +457,18 @@ The existence of paths is important for the \refact{walk} action, but paths are 
 
 \subsection{Characters} \label{sec:characters}
 
-Characters are agents who act in the story world. Like locations, each character has a unique name and a type. There can be more than one character of the same type in a problem as long as they have different names. We recommend avoiding duplicate character types when possible simply for the sake of variety.
+Characters are agents who act in the story world. Like locations, each character has a unique name and a type. There can be more than one character of the same type in a scenario as long as they have different names. We recommend avoiding duplicate character types when possible simply for the sake of variety.
 
-Figure \ref{fig:problemex} shows an example list of characters. In YAML, the list of characters is the key \element{characters} followed by a mapping of string names to string types, where the type is one of those defined below. The list of characters is not optional, because a problem must define at least one character.
+Figure \ref{fig:problemex} shows an example list of characters. In YAML, the list of characters is the key \element{characters} followed by a mapping of string names to string types, where the type is one of those defined below. The list of characters is not optional, because a scenario must define at least one character.
 
-Character types define what special actions a character can take. They prohibit some character goals and recommend others. Many character types also define a default starting location and starting items. These defaults do not apply if a problem explicitly states some other starting location or starting items.
+Character types define what special actions a character can take. They prohibit some character goals and recommend others. Many character types also define a default starting location and starting items. These defaults do not apply if a scenario explicitly states some other starting location or starting items.
 
 The only character type that is always available is the \refchar{peasant}, which has no special qualities. All other character types are enabled by \hyperref[sec:extensions]{extensions}.
 
 \defchar{bandit}{
 \begin{itemize}
 	\item Only available when \refmech{Stealth} or \refmech{Theft} is enabled.
-	\item Starts at the first \refloc{camp} or \refloc{crossroads} defined in the problem by default.
+	\item Starts at the first \refloc{camp} or \refloc{crossroads} defined in the scenario by default.
 	\item Required not to have \refgoal{lawful} goal.
 	\item Recommended to have a \refgoal{rich} goal.
 	\item Can \refact{hide} at any location, not just a \refloc{camp}.
@@ -478,7 +478,7 @@ The only character type that is always available is the \refchar{peasant}, which
 \defchar{cleric}{
 \begin{itemize}
 	\item Only available when \refmech{Forgiveness}, \refmech{Healing}, or \refmech{Undead} is enabled.
-	\item Starts at the first \refloc{chapel} or \refloc{graveyard} defined in the problem by default.
+	\item Starts at the first \refloc{chapel} or \refloc{graveyard} defined in the scenario by default.
 	\item Required not to have \refgoal{avenged} goal (unless they become a \refconst{Ghost}; see \hyperref[sec:goals]{Goals}).
 	\item Recommended to have an \refgoal{obliged} goal.
 	\item Can \refact{banish} a \refconst{Ghost} even if they are not carrying a \refconst{BanishPotion}.
@@ -489,7 +489,7 @@ The only character type that is always available is the \refchar{peasant}, which
 \defchar{knight}{
 \begin{itemize}
 	\item Only available when \refmech{Crime} or \refmech{Violence} is enabled.
-	\item Starts at the first \refloc{castle} or \refloc{market} defined in the problem by default.
+	\item Starts at the first \refloc{castle} or \refloc{market} defined in the scenario by default.
 	\item Starts with a \refconst{Sword} in their \refvar{left} hand by default.
 	\item Recommended to have a \refgoal{ruling} goal for a \refchar{noble}.
 	\item Recommended to have a \refgoal{lawful} goal.
@@ -499,7 +499,7 @@ The only character type that is always available is the \refchar{peasant}, which
 \defchar{merchant}{
 \begin{itemize}
 	\item Only available when \refmech{Commerce} is enabled.
-	\item Starts at the first \refloc{market} or \refloc{crossroads} defined in the problem by default.
+	\item Starts at the first \refloc{market} or \refloc{crossroads} defined in the scenario by default.
 	\item Recommended to start with at least one item of any type except a \refconst{Coin}.
 	\item Required not to have a \refgoal{liked} goal.
 	\item Recommended to have a \refgoal{rich} goal.
@@ -509,7 +509,7 @@ The only character type that is always available is the \refchar{peasant}, which
 \defchar{noble}{
 \begin{itemize}
 	\item Only available when \refmech{Enchantment} or \refmech{Monarchy} is enabled.
-	\item Starts at the first \refloc{castle} or \refloc{chapel} defined in the problem by default.
+	\item Starts at the first \refloc{castle} or \refloc{chapel} defined in the scenario by default.
 	\item Starts with a \refconst{Coin} in their \refvar{left} hand by default.
 	\item Recommended to have a \refgoal{ruling} goal.
 	\item Can \refact{charm} another character even when not carrying a \refconst{CharmPotion}.
@@ -517,13 +517,13 @@ The only character type that is always available is the \refchar{peasant}, which
 
 \defchar{peasant}{
 \begin{itemize}
-	\item Starts at the first \refloc{village} or \refloc{workshop} defined in the problem by default.
+	\item Starts at the first \refloc{village} or \refloc{workshop} defined in the scenario by default.
 \end{itemize}}
 
 \defchar{sorcerer}{
 \begin{itemize}
 	\item Only available when \refmech{Enchantment}, \refmech{Healing}, \refmech{Sickness}, \refmech{Stealth}, \refmech{Teleportation}, or \refmech{Undead} is enabled.
-	\item Starts at the first \refloc{laboratory} or \refloc{graveyard} defined in the problem by default.
+	\item Starts at the first \refloc{laboratory} or \refloc{graveyard} defined in the scenario by default.
 	\item Recommended to start with at least one \hyperref[sec:constants]{potion} of any type.
 	\item Recommended to have an \refgoal{avenged} goal.
 	\item Can \refact{brew} a potion even when not in a \refloc{laboratory}.
@@ -533,17 +533,17 @@ The only character type that is always available is the \refchar{peasant}, which
 
 \subsection{Variables and Initial Values} \label{sec:variables}
 
-Variables are features of a problem that are assigned one of several possible values. All of a problem's variables with their assigned values define a problem state. Different \hyperref[sec:actions]{actions} are possible depending on the current state, and \hyperref[sec:actions]{actions} change the values assigned to variables. Actions are the only way to change variable values.
+Variables are features of a scenario that are assigned one of several possible values. All of a scenario's variables with their assigned values define a scenario state. Different \hyperref[sec:actions]{actions} are possible depending on the current state, and \hyperref[sec:actions]{actions} change the values assigned to variables. Actions are the only way to change variable values.
 
-A problem does not explicitly define its variables; they are implied by the other elements in the problem. For example, when the \refmech{Violence} extension is enabled the problem must have a \refvar{health} variable for every \hyperref[sec:characters]{character}.
+A scenario does not explicitly define its variables; they are implied by the other elements in the scenario. For example, when the \refmech{Violence} extension is enabled the scenario must have a \refvar{health} variable for every \hyperref[sec:characters]{character}.
 
-A variable is identified by a name followed by zero to many arguments. In the example above, \element{health} is the name of the variable, and it has one argument, the name of the character. If a problem defines two characters named \element{Robin} and \element{Marian}, then it will have two \refvar{health} variables, one for each of them. In text, we would write those variables as \element{health(Robin)} and \element{health(Marian)}, though in YAML we use a different style, as discussed below.
+A variable is identified by a name followed by zero to many arguments. In the example above, \element{health} is the name of the variable, and it has one argument, the name of the character. If a scenario defines two characters named \element{Robin} and \element{Marian}, then it will have two \refvar{health} variables, one for each of them. In text, we would write those variables as \element{health(Robin)} and \element{health(Marian)}, though in YAML we use a different style, as discussed below.
 
-Some variables have more than one argument, and the order of arguments matters. For example, every problem tracks the \refvar{relationship} between each pair of characters, so our example problem will need the variables \element{relationship(Robin, Marian)} and \element{relationship(Marian, Robin)}. The first variable tracks how \element{Robin} regards \element{Marian}, and the second tracks how \element{Marian} regards \element{Robin}. Relationships are not symmetric, so these variables can have different values.
+Some variables have more than one argument, and the order of arguments matters. For example, every scenario tracks the \refvar{relationship} between each pair of characters, so our example scenario will need the variables \element{relationship(Robin, Marian)} and \element{relationship(Marian, Robin)}. The first variable tracks how \element{Robin} regards \element{Marian}, and the second tracks how \element{Marian} regards \element{Robin}. Relationships are not symmetric, so these variables can have different values.
 
-The variable definitions in this section begin with the variable name, followed by one or more parameters in parentheses, followed by a colon and a description of the variable's possible values. Sometimes a value is simply Boolean, meaning \element{True} or \element{False}. Sometimes a value is a type, like a location. For example, every character has a \refvar{location} variable, and its possible values are the names of every \hyperref[sec:locations]{location} defined in the problem, plus \None to represent a situation where the character is nowhere on the map. Sometimes a variable's value is a set of pre-defined \hyperref[sec:constants]{constants}. For example, a \refvar{relationship} variable can have three possible values: \refconst{Friend}, \None, and \refconst{Enemy}, which mean that the first character considers the second a friend, has no relationship, or considers the second an enemy respectively. Many variables have one of a pre-defined list of \hyperref[sec:constants]{constants} as their possible values. All constants are defined in \hyperref[sec:constants]{the next section}.
+The variable definitions in this section begin with the variable name, followed by one or more parameters in parentheses, followed by a colon and a description of the variable's possible values. Sometimes a value is simply Boolean, meaning \element{True} or \element{False}. Sometimes a value is a type, like a location. For example, every character has a \refvar{location} variable, and its possible values are the names of every \hyperref[sec:locations]{location} defined in the scenario, plus \None to represent a situation where the character is nowhere on the map. Sometimes a variable's value is a set of pre-defined \hyperref[sec:constants]{constants}. For example, a \refvar{relationship} variable can have three possible values: \refconst{Friend}, \None, and \refconst{Enemy}, which mean that the first character considers the second a friend, has no relationship, or considers the second an enemy respectively. Many variables have one of a pre-defined list of \hyperref[sec:constants]{constants} as their possible values. All constants are defined in \hyperref[sec:constants]{the next section}.
 
-All variables have a default initial value they will be assigned, but these defaults are ignored if the problem explicitly defines a variable's initial value. Figure \ref{fig:problemex} shows an example list of initial values. In YAML, this list is the key \element{initial} followed by a sequence of sequences. Each initial value sequence includes the variable name (defined below), its arguments, and finally the initial value to assign to that variable. For example, if we want \element{Robin} to start with a \refconst{Sword}, we would write:
+All variables have a default initial value they will be assigned, but these defaults are ignored if the scenario explicitly defines a variable's initial value. Figure \ref{fig:problemex} shows an example list of initial values. In YAML, this list is the key \element{initial} followed by a sequence of sequences. Each initial value sequence includes the variable name (defined below), its arguments, and finally the initial value to assign to that variable. For example, if we want \element{Robin} to start with a \refconst{Sword}, we would write:
 
 \centerline{\element{[\refvar{left}, Robin, \refconst{Sword}]}}
 
@@ -612,7 +612,7 @@ Some variables, like the \refvar{relationship} between each character, are count
 \begin{itemize}
   \item The \param{character}'s current position on the map.
 	\item The value \None means the character is nowhere on the map.
-	\item \hyperref[sec:characters]{Character types} specify default locations. When the specified locations are not available, the default value is the first location defined in the problem.
+	\item \hyperref[sec:characters]{Character types} specify default locations. When the specified locations are not available, the default value is the first location defined in the scenario.
 	\item The \refgoal{at} goal is satisfied by a character being at a certain location.
 	\item Many actions require that a character be at a certain location or in the same location as another character they are interacting with.
 	\item Character locations can change via the \refact{arrest}, \refact{teleport}, and \refact{walk} actions.
@@ -842,7 +842,7 @@ One use of constants is the items that characters carry and use in the story. Mi
 
 Goals are objectives. There are two kinds of goals in MicroTales, {\em character goals} and {\em story goals}. Character goals are personal objectives that individual characters want to achieve. Story goals are objectives that the storyteller should try to achieve with the story as a whole.
 
-Similar to \hyperref[sec:variables]{variables}, a goal is one of the names define below followed by zero to many arguments. Figure \ref{fig:problemex} shows an example list of goals. In YAML, it is the key \element{goals} followed by a sequence of sequences. If the sequence is a character goal, the first element is the name of one of the problem's \hyperref[sec:characters]{characters}. If the sequence is a story goal, this name is omitted. The next elements in both types are the goal name (defined below), followed by the goal's arguments.
+Similar to \hyperref[sec:variables]{variables}, a goal is one of the names define below followed by zero to many arguments. Figure \ref{fig:problemex} shows an example list of goals. In YAML, it is the key \element{goals} followed by a sequence of sequences. If the sequence is a character goal, the first element is the name of one of the scenario's \hyperref[sec:characters]{characters}. If the sequence is a story goal, this name is omitted. The next elements in both types are the goal name (defined below), followed by the goal's arguments.
 
 For example, this character goal in YAML format says that \element{John} wants \element{John} to be the \refvar{monarch}:
 
@@ -962,15 +962,15 @@ MicroTales tries to avoid imposing any particular model of what makes a good sto
 
 Actions are events that happen in a story. An action has preconditions that limit when it can happen and effects that modify the world state.
 
-A problem does not explicitly define actions; they are implied by the other elements in the problem. Any time an action is enabled by a \hyperref[sec:extensions]{extension} it is available in a story. For example, the \refact{enthrone} action is always available in every story where \refmech{Monarchy} is enabled, though it can only happen when a character is in a \refloc{castle} and holding a \refconst{Crown}.
+A scenario does not explicitly define actions; they are implied by the other elements in the scenario. Any time an action is enabled by a \hyperref[sec:extensions]{extension} it is available in a story. For example, the \refact{enthrone} action is always available in every story where \refmech{Monarchy} is enabled, though it can only happen when a character is in a \refloc{castle} and holding a \refconst{Crown}.
 
 Like \hyperref[sec:variables]{variables} and \hyperref[sec:goals]{goals}, actions are parameterized. The list of parameters are given in parentheses after the name.
 
 An action's preconditions are meant as minimal restrictions for an action to seem believable based on the world state. Action preconditions do not attempt to restrict when an action makes narrative sense. For example, it probably does not make narrative sense for a character who wants to be \refgoal{rich} to \refact{give} away their \refconst{Coin}, but MicroTales does not prevent this because one purpose of MicroTales is to study different models of when actions make sense. Ideally, a character's actions are determined by their character goals and the story goals, though this is not required, and it is not enforced by preconditions. To study the generation of good stories, it must be possible to generate bad stories.
 
-Some actions have an active version that is done by a character and a passive version that simply happens. For example, when a character is \refconst{Hurt}, they can be made \refconst{Healthy} again via by the \refact{heal} action, which is actively done by a character, but they can also simply get better via the \refact{recover} action. Actions not taken by characters provide flexibility in solving problems, but may be perceived as a {\em deus ex machina}. 
+Some actions have an active version that is done by a character and a passive version that simply happens. For example, when a character is \refconst{Hurt}, they can be made \refconst{Healthy} again via by the \refact{heal} action, which is actively done by a character, but they can also simply get better via the \refact{recover} action. Actions not taken by characters provide flexibility in solving scenarios, but may be perceived as a {\em deus ex machina}. 
 
-For brevity, we list preconditions and effects on all variables, even if they are not used in a problem. For example, many actions require that a character not be \refconst{Dead}, but this only applies if \refvar{health} variables exist. If the \refmech{Sickness} or \refmech{Violence} \hyperref[sec:extensions]{extensions} are not enabled, \refvar{health} variables do not exist, so preconditions and effects on those variables are ignored.
+For brevity, we list preconditions and effects on all variables, even if they are not used in a scenario. For example, many actions require that a character not be \refconst{Dead}, but this only applies if \refvar{health} variables exist. If the \refmech{Sickness} or \refmech{Violence} \hyperref[sec:extensions]{extensions} are not enabled, \refvar{health} variables do not exist, so preconditions and effects on those variables are ignored.
 
 We use a few common shorthand phrases in action preconditions:
 \begin{itemize}
@@ -981,7 +981,7 @@ We use a few common shorthand phrases in action preconditions:
 	\item ``A character is now holding one additional \param{item}'' means that one of their hands that was previously \None is now \param{item}.
 \end{itemize}
 
-The only actions that always available in every problem are basic movement, the \refact{walk} action, and basic item interactions, the \refact{pickup}, \refact{drop}, \refact{give}, and \refact{trade} actions.
+The only actions that always available in every scenario are basic movement, the \refact{walk} action, and basic item interactions, the \refact{pickup}, \refact{drop}, \refact{give}, and \refact{trade} actions.
 
 \defact{arrest}{\param{character}, \param{target}, \param{jail}}{
 \begin{pre}
