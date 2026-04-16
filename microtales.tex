@@ -565,7 +565,7 @@ Some variables, like the \refvar{relationship} between each character, are count
 	\item The \refgoal{lawless} goal is satisfied when characters are criminals and not in a \refloc{jail}.
 	\item The \refgoal{lawful} goal is satisfied when no characters are criminals or when all criminals are in a \refloc{jail}.
 	\item It is a crime to \refact{arrest} a character who is not a \refvar{criminal}.
-	\item It is a crime to \refact{release} prisoners from the \refloc{jail}.
+	\item It is a crime to \refact{release} criminals from the \refloc{jail}.
 	\item When \refmech{Sickness} or \refmech{Undead} is enabled, it is a crime to \refact{curse} a character who is not a criminal.
 	\item When \refmech{Theft} is enabled, it is a crime to \refact{take} an item from a living character who is not a criminal.
 	\item When \refmech{Violence} is enabled, it is a crime to \refact{attack} a character who is not a criminal.
@@ -1019,7 +1019,7 @@ The only actions that always available in every scenario are basic movement, the
 	\item If the \param{target} is not a \refvar{criminal}, the \param{character} is now a \refvar{criminal}.
 	\item If the \refvar{relationship} between \param{target} and \param{character} was \refconst{Friend}, it is now \None.
 	\item If the \refvar{relationship} between \param{target} and \param{character} was \None, it is now \refconst{Enemy}.
-	\item If the \param{character}'s \refvar{spouse} was \param{other}, then \param{character}'s spouse is now \None and \param{other}'s \refvar{spouse} is now \None.
+	\item If the \param{target} was \refconst{Hurt} (now \refconst{Dead}) and \param{target}'s \refvar{spouse} was \param{other}, then the \param{target}'s spouse is now \None and \param{other}'s \refvar{spouse} is now \None.
 \end{eff}}
 
 \defact{banish}{\param{character}, \param{target}}{
@@ -1094,11 +1094,11 @@ The only actions that always available in every scenario are basic movement, the
 \begin{eff}
   \item If the \param{target} was \refconst{Healthy}, they are now \refconst{Hurt}.
 	\item If the \param{target} was \refconst{Hurt}, they are now \refconst{Dead}.
-	\item If the \param{target} is not a \refconst{Ghost}, they are now holding one fewer \refconst{CursePotion}.
+	\item If the \param{character} is not a \refconst{Ghost}, they are now holding one fewer \refconst{CursePotion}.
 	\item If the \param{target} is not a \refvar{criminal}, the \param{character} is now a \refvar{criminal}.
 	\item If the \refvar{relationship} between \param{target} and \param{character} was \refconst{Friend}, it is now \None.
 	\item If the \refvar{relationship} between \param{target} and \param{character} was \None, it is now \refconst{Enemy}.
-	\item If the \param{target}'s \refvar{spouse} was \param{other}, then \param{target}'s spouse is now \None and \param{other}'s \refvar{spouse} is now \None.
+	\item If the \param{target} was \refconst{Hurt} (now \refconst{Dead}) and \param{target}'s \refvar{spouse} was \param{other}, then the \param{target}'s spouse is now \None and \param{other}'s \refvar{spouse} is now \None.
 \end{eff}}
 
 \defact{die}{\param{character}}{
@@ -1201,10 +1201,11 @@ The only actions that always available in every scenario are basic movement, the
   \item Only available when \refmech{Stealth} is enabled.
 	\item The \param{character} is alive.
 	\item The \param{character} is \refvar{visible}.
-	\item The \param{character} is at a \refloc{camp} or is a \refchar{bandit}.
+	\item The \param{character} is at a \refloc{camp}, is a \refchar{bandit}, or is holding a \refconst{HidePotion}.
 \end{pre}
 \begin{eff}
   \item The \param{character} is no longer \refvar{visible}.
+  \item If the \param{character} is not at a \refloc{camp} and is not a \refchar{bandit}, the \param{character} now has one fewer \refconst{HidePotion}.
 \end{eff}}
 
 \defact{jailbreak}{\param{jail}}{
@@ -1222,6 +1223,7 @@ The only actions that always available in every scenario are basic movement, the
   \item Only available when \refmech{Sickness} or \refmech{Violence} is enabled.
 	\item The \param{item} is an \hyperref[sec:constants]{item constant}.
 	\item The \param{character} is alive.
+	\item The \param{character} has an empty hand.
 	\item The \param{target} is \refconst{Dead}.
 	\item The \param{character} and \param{target} are at the same \refvar{location}.
 \end{pre}
@@ -1352,6 +1354,7 @@ The only actions that always available in every scenario are basic movement, the
 	\item The \param{character} is alive.
 	\item The \param{character} is holding a \refconst{Sword}, or the \param{character} is a \refchar{bandit}, or the \param{target} is \refconst{Hurt}.
 	\item The \param{character} has an empty hand.
+	\item The \param{target} is alive.
 	\item The \param{target} is \refvar{visible}.
 	\item The \param{character} and \param{target} are at the same \refvar{location}.
 \end{pre}

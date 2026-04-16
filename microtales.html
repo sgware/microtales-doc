@@ -5,7 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Stephen G. Ware and Molly Siler" />
-  <meta name="dcterms.date" content="2025-11-18" />
+  <meta name="dcterms.date" content="2026-04-15" />
   <title>MicroTales: Story Planning Benchmark Problems that Scale along Several Dimensions Version 1.0</title>
   <style>
     /* Default styles provided by pandoc.
@@ -198,7 +198,7 @@
 Scale along Several Dimensions<br />
 <span>Version 1.0</span></h1>
 <p class="author">Stephen G. Ware and Molly Siler</p>
-<p class="date">2025-11-18</p>
+<p class="date">2026-04-15</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <h2 id="toc-title">Contents</h2>
@@ -1367,7 +1367,7 @@ a <a href="#loc:jail"><code>jail</code></a>.</p></li>
 character who is not a <a
 href="#var:criminal"><code>criminal</code></a>.</p></li>
 <li><p>It is a crime to <a href="#act:release"><code>release</code></a>
-prisoners from the <a href="#loc:jail"><code>jail</code></a>.</p></li>
+criminals from the <a href="#loc:jail"><code>jail</code></a>.</p></li>
 <li><p>When <a href="#mech:Sickness"><code>Sickness</code></a> or <a
 href="#mech:Undead"><code>Undead</code></a> is enabled, it is a crime to
 <a href="#act:curse"><code>curse</code></a> a character who is not a
@@ -2506,10 +2506,12 @@ href="#const:Friend"><code>Friend</code></a>, it is now
 <li><p>If the <a href="#var:relationship"><code>relationship</code></a>
 between <em>target</em> and <em>character</em> was <code>Null</code>, it
 is now <a href="#const:Enemy"><code>Enemy</code></a>.</p></li>
-<li><p>If the <em>character</em>’s <a
-href="#var:spouse"><code>spouse</code></a> was <em>other</em>, then
-<em>character</em>’s spouse is now <code>Null</code>and <em>other</em>’s
-<a href="#var:spouse"><code>spouse</code></a> is now
+<li><p>If the <em>target</em> was <a
+href="#const:Hurt"><code>Hurt</code></a> (now <a
+href="#const:Dead"><code>Dead</code></a>) and <em>target</em>’s <a
+href="#var:spouse"><code>spouse</code></a> was <em>other</em>, then the
+<em>target</em>’s spouse is now <code>Null</code>and <em>other</em>’s <a
+href="#var:spouse"><code>spouse</code></a> is now
 <code>Null</code>.</p></li>
 </ul>
 <p><strong><code>banish (</code></strong> <span><em>character</em>,
@@ -2656,7 +2658,7 @@ href="#const:Hurt"><code>Hurt</code></a>.</p></li>
 <li><p>If the <em>target</em> was <a
 href="#const:Hurt"><code>Hurt</code></a>, they are now <a
 href="#const:Dead"><code>Dead</code></a>.</p></li>
-<li><p>If the <em>target</em> is not a <a
+<li><p>If the <em>character</em> is not a <a
 href="#const:Ghost"><code>Ghost</code></a>, they are now holding one
 fewer <a
 href="#const:CursePotion"><code>CursePotion</code></a>.</p></li>
@@ -2670,8 +2672,10 @@ href="#const:Friend"><code>Friend</code></a>, it is now
 <li><p>If the <a href="#var:relationship"><code>relationship</code></a>
 between <em>target</em> and <em>character</em> was <code>Null</code>, it
 is now <a href="#const:Enemy"><code>Enemy</code></a>.</p></li>
-<li><p>If the <em>target</em>’s <a
-href="#var:spouse"><code>spouse</code></a> was <em>other</em>, then
+<li><p>If the <em>target</em> was <a
+href="#const:Hurt"><code>Hurt</code></a> (now <a
+href="#const:Dead"><code>Dead</code></a>) and <em>target</em>’s <a
+href="#var:spouse"><code>spouse</code></a> was <em>other</em>, then the
 <em>target</em>’s spouse is now <code>Null</code>and <em>other</em>’s <a
 href="#var:spouse"><code>spouse</code></a> is now
 <code>Null</code>.</p></li>
@@ -2869,13 +2873,19 @@ href="#mech:Stealth"><code>Stealth</code></a> is enabled.</p></li>
 <li><p>The <em>character</em> is <a
 href="#var:visible"><code>visible</code></a>.</p></li>
 <li><p>The <em>character</em> is at a <a
-href="#loc:camp"><code>camp</code></a> or is a <a
-href="#char:bandit"><code>bandit</code></a>.</p></li>
+href="#loc:camp"><code>camp</code></a>, is a <a
+href="#char:bandit"><code>bandit</code></a>, or is holding a <a
+href="#const:HidePotion"><code>HidePotion</code></a>.</p></li>
 </ul>
 <p><strong>Effects:</strong></p>
 <ul>
 <li><p>The <em>character</em> is no longer <a
 href="#var:visible"><code>visible</code></a>.</p></li>
+<li><p>If the <em>character</em> is not at a <a
+href="#loc:camp"><code>camp</code></a> and is not a <a
+href="#char:bandit"><code>bandit</code></a>, the <em>character</em> now
+has one fewer <a
+href="#const:HidePotion"><code>HidePotion</code></a>.</p></li>
 </ul>
 <p><strong><code>jailbreak (</code></strong> <span><em>jail</em></span>
 <strong><code>)</code></strong><span id="act:jailbreak"
@@ -2906,6 +2916,7 @@ href="#mech:Violence"><code>Violence</code></a> is enabled.</p></li>
 <li><p>The <em>item</em> is an <a href="#sec:constants">item
 constant</a>.</p></li>
 <li><p>The <em>character</em> is alive.</p></li>
+<li><p>The <em>character</em> has an empty hand.</p></li>
 <li><p>The <em>target</em> is <a
 href="#const:Dead"><code>Dead</code></a>.</p></li>
 <li><p>The <em>character</em> and <em>target</em> are at the same <a
@@ -3157,6 +3168,7 @@ href="#const:Sword"><code>Sword</code></a>, or the <em>character</em> is
 a <a href="#char:bandit"><code>bandit</code></a>, or the <em>target</em>
 is <a href="#const:Hurt"><code>Hurt</code></a>.</p></li>
 <li><p>The <em>character</em> has an empty hand.</p></li>
+<li><p>The <em>target</em> is alive.</p></li>
 <li><p>The <em>target</em> is <a
 href="#var:visible"><code>visible</code></a>.</p></li>
 <li><p>The <em>character</em> and <em>target</em> are at the same <a
