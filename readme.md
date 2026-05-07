@@ -5,7 +5,8 @@ variety of story planning problems of varying size and difficulty. This
 documentation explains the design goals of MicroTales and precisely defines all
 elements.
 
-MicroTales documentation is available in [PDF](microtales.pdf) and
+MicroTales documentation is available in
+[PDF](https://sgware.github.io/microtales-doc/microtales.pdf) and
 [HTML](https://sgware.github.io/microtales-doc/microtales.html) formats.
 
 # Compiling
