@@ -6,7 +6,7 @@ documentation explains the design goals of MicroTales and precisely defines all
 elements.
 
 MicroTales documentation is available in [PDF](microtales.pdf) and
-[HTML](https://sgware.github.io/microtales-doc/) formats.
+[HTML](https://sgware.github.io/microtales-doc/microtales.html) formats.
 
 # Compiling
 
